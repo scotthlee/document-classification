@@ -1,4 +1,4 @@
-"Scott's script for training a random forest on the 2006 and 2008 ADDM evaluations" 
+"Document classification with a random forest" 
 import pandas as pd
 import numpy as np
 import sklearn
