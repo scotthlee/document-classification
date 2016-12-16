@@ -16,6 +16,6 @@ $ python nbsvm.py '~/data/docs.csv' 'sentiment' 'text' -lm 'no' -ng 3 -sm 'train
 
 The optional arguments specify that vectorizer should not limit the number features it considers; that the maximum n-gram size should be 3; and that the data should be split using sklearn's train_test() function. See readme for nbsvm.py for more details.
 
-# required dependencies
+# required modules
 To run these scripts, you'll need the Pandas, ScikitLearn, and Scipy/Numpy modules in addition to a working installation of Python.
 
