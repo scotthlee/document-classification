@@ -3,7 +3,7 @@ This is a collection of scripts for doing sentiment analysis or, considered more
 
 # what's included
   1. functions.py includes functions for training, testing, and tuning supervised document classification models
-  2. nbsvm.py implements Wang and Manning's (2012) interpolated multinomial naive Bayes/support vector machine to.
+  2. nbsvm.py implements Wang and Manning's (2012) interpolated multinomial naive Bayes/support vector machine.
   3. rf.py performs the same task as the NB-SVM, only using a random forest as the classifier instead of an SVM.
 
 # using the scripts
@@ -22,3 +22,5 @@ To run these scripts, you'll need the Pandas, ScikitLearn, and Scipy/Numpy modul
 # friendly reminder
 These models may work well with your data, but they also may not. Remember that many of the benchmark datasets for sentiment analysis are large, both in terms of vocabulary size and training data volume, so the ~90% accuracy that we see in state-of-the-art may be hard, if not impossible, for you to reach. Adjust your expectations accordingly, and have fun. ;)
 
+# references
+[wang and manning 2012](http://nlp.stanford.edu/pubs/sidaw12_simple_sentiment.pdf)
