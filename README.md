@@ -23,4 +23,4 @@ To run these scripts, you'll need the Pandas, ScikitLearn, and Scipy/Numpy modul
 These models may work well with your data, but they also may not. Remember that many of the benchmark datasets for sentiment analysis are large, both in terms of vocabulary size and training data volume, so the ~90% accuracy that we see in state-of-the-art may be hard, if not impossible, for you to reach. Adjust your expectations accordingly, and have fun. ;)
 
 # references
-[wang and manning 2012](http://nlp.stanford.edu/pubs/sidaw12_simple_sentiment.pdf)
+S. Wang, C. Manning. 2012. Baselines and bigrams: Simple, good sentiment and topic classificiation. In proceedings of ACL 2012. [pdf](http://nlp.stanford.edu/pubs/sidaw12_simple_sentiment.pdf)
