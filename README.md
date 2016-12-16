@@ -1,5 +1,5 @@
 # document_classification
-This is a collection of scripts for doing sentiment analysis or, considered more broadly, document classification. Generally, each script will vectorize your text (i.e. by some form of bag-of-words) and then train a supervised model to predict which class each of the test documents belongs to. The scripts can be executed piece-by-piece from within Python, but they are intended to be run from command line and rely heavily on Python's argparse module for model customization and tuning.
+This is a collection of scripts for doing sentiment analysis or, considered more broadly, document classification. Generally, each script will vectorize your text (i.e. by some form of bag-of-words) and then train a supervised model to predict which class each of the test documents belongs to. The scripts can be executed piece-by-piece from within Python, but they are intended to be run from the command line and rely heavily on Python's argparse module for model customization and tuning.
 
 # what's included
   1. functions.py includes functions for training, testing, and tuning supervised document classification models
