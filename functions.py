@@ -1,6 +1,5 @@
 
 """Functions for training, testing, and tuning document classification models on the autism data"""
-
 import math
 import numpy as np
 import sklearn
@@ -45,6 +44,7 @@ def log_count_ratio(pos_text, neg_text, alpha=1):
     r = np.log(np.true_divide(p_ratio, q_ratio))
     return r
 
+#used to implement your own NB-SVM, if you don't want to use the sklearn built-in
 def nb_svm(x, y, w, b, C=1):
     wt = w.transpose()
     y = y.reshape(y.shape[0], 1)
@@ -65,6 +65,7 @@ def tune_beta(x, y, w, b, betas):
         results[i,1] = accuracy(x, y, int_weights, b)
     return results
 
+#returns SVM accuracy as a function of the C parameter
 def tune_C(x_tr, y_tr, x_te, y_te, c_params, beta=0.25, interpolate=False):
     out = pd.DataFrame(np.zeros([len(c_params), 11]), columns=diag_names)
     i = 0
