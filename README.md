@@ -1,8 +1,9 @@
 # document_classification
+This is a collection of scripts for doing sentiment analysis (i.e. document classification).
 
-# Description
-This is a collection of scripts for doing sentiment analysis (i.e. document classification). 
+# General description of scripts
 
-Required modules:
-ScikitLearn, Numpy
+
+# System requirements
+You'll need Pandas, ScikitLearn, and Numpy installed to run these scripts.
 
