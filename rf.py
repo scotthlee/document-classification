@@ -14,6 +14,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('data', help='path for the input data')
 parser.add_argument('y_name', help='name of the column holding the (binary) target variable')
 parser.add_argument('x_name', help='name of the column holding the text')
+parser.add_argument('-cr', '--cross_val', default='no', help='perform cross-validation on the training data?')
+parser.add_argument('-k', '--n_folds', type=int, default=10, help='number of folds for cross-validation')
 parser.add_argument('-ft', '--features', type=int, default=10000, help='max number of features to consider')
 parser.add_argument('-ng', '--ngrams', type=int, default=3, help='max size of ngrams to calculate')
 parser.add_argument('-vc', '--vectorizer', default='tfidf', help='which vectorizer to use')
@@ -61,8 +63,7 @@ else:
 	y_test = full_y[test_indices]
 
 print "Training the random forest..."
-
-#training the initial random forest
+	
 rf = RandomForestClassifier(n_estimators=args.trees)
 rf_train = rf.fit(X_train, y_train)
 
@@ -82,9 +83,19 @@ rf_trimmed = RandomForestClassifier(n_estimators=args.trees)
 rf_trimmed_train = rf_trimmed.fit(train_trimmed, y_train)
 rf_trimmed_test = rf_trimmed.score(test_trimmed, y_test)
 
-print "\nResults:"
-print "Raw model accuracy is %0.4f" %rf_test
-print "Trimmed model accuracy is %0.4f\n" %rf_trimmed_test
+if args.cross_val == 'yes':
+	print "Performing %i-fold cross-validation..." %args.n_folds
+	rf_cross = cross_val_score(rf, X_train, y_train, cv=args.n_folds)
+	rf_trimmed_cross = cross_val_score(rf_trimmed, X_train, y_train, cv=args.n_folds)
+	print "\nResults:"
+	print "With the full model, cross-val accuracy is %0.4f, and test accuracy is %0.4f" %(rf_cross.mean(), rf_test)
+	print "With the trimmed model, cross-val accuracy is %0.4f, and test accuracy is %0.4f\n" %(rf_trimmed_cross.mean(), rf_trimmed_test)
+
+else:
+	print "\nResults:"
+	print "Raw model accuracy is %0.4f" %rf_test
+	print "Trimmed model accuracy is %0.4f\n" %rf_trimmed_test
+
 top_features(sorted_features, full_names, reverse=True)
 
 
