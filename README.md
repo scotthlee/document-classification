@@ -17,10 +17,10 @@ This line will train an NB-SVM on the imaginary docs.csv using the values in the
 $ python nbsvm.py '~/data/docs.csv' 'sentiment' 'text' -lm 'no' -ng 3 -sm 'train-test'
 ```
 
-The optional arguments specify that vectorizer should not limit the number features it considers; that the maximum n-gram size should be 3; and that the data should be split using sklearn's train_test() function. See the readme for [nbsvm.py](documentation/nbsvm_README.md) for more details.
+The optional arguments specify that vectorizer should not limit the number features it considers; that the maximum n-gram size should be 3; and that the data should be split using sklearn's train_test() function. See the readme for [nbsvm.py](docs/nbsvm_README.md) for more details.
 
-## required modules
-To run these scripts, you'll need the Pandas, ScikitLearn, and Scipy/Numpy modules in addition to a working installation of Python (the code was written using 2.7.x).
+## system requirements
+To run these scripts, you'll need the Pandas, ScikitLearn, and Scipy/Numpy modules in addition to a working installation of Python (the code was written using 2.7.x). The code is also not optimized for speed, so model training may take a while, especially if the dimensionality is particularly high, e.g. with a large number of estimators in a random forest or with a big corpus, or if you perform cross-validation. 
 
 ## references
 S. Wang, C. Manning. 2012. Baselines and bigrams: Simple, good sentiment and topic classificiation. In *Proceedings of ACL 2012*. [PDF](http://nlp.stanford.edu/pubs/sidaw12_simple_sentiment.pdf)
