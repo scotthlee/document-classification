@@ -23,4 +23,4 @@ The optional arguments specify that vectorizer should not limit the number featu
 To run these scripts, you'll need the Pandas, ScikitLearn, and Scipy/Numpy modules in addition to a working installation of Python (the code was written using 2.7.x).
 
 ## references
-S. Wang, C. Manning. 2012. Baselines and bigrams: Simple, good sentiment and topic classificiation. In proceedings of ACL 2012. [PDF](http://nlp.stanford.edu/pubs/sidaw12_simple_sentiment.pdf)
+S. Wang, C. Manning. 2012. Baselines and bigrams: Simple, good sentiment and topic classificiation. In *Proceedings of ACL 2012*. [PDF](http://nlp.stanford.edu/pubs/sidaw12_simple_sentiment.pdf)
