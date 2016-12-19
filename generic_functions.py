@@ -7,6 +7,7 @@ import pandas as pd
 from sklearn.svm import SVC, LinearSVC
 from sklearn.ensemble import RandomForestClassifier
 
+"""Functions for working with linear models"""
 #gets the diagnostic accuracy of a linear classifier; kinda pointless for an SVM, but still interesting
 def diagnostics(x, y, w, b, exp=False, cutoff=.5):
     out = pd.DataFrame(np.zeros([1, 11]), columns=diag_names)
@@ -53,6 +54,7 @@ def roc(x, y, w, b, exp=False, cutoff=.5, by=.01):
         out.iloc[i,:] = np.array(diagnostics(x, y, w, b, exp, cutoff))
         i += 1
     return out
+
 
 
 
