@@ -4,99 +4,140 @@ import argparse
 import pandas as pd
 import numpy as np
 import sklearn
-from functions import *
+from generic_functions import *
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.svm import SVC, LinearSVC
 from sklearn.model_selection import train_test_split, cross_val_score, KFold
 
-parser = argparse.ArgumentParser()
+#calculates the log-count ratio r
+def log_count_ratio(pos_text, neg_text, alpha=1):
+    p = np.add(alpha, np.sum(pos_text, axis=0))
+    q = np.add(alpha, np.sum(neg_text, axis=0))
+    p_norm, q_norm = np.sum(p), np.sum(q)
+    p_ratio = np.true_divide(p, p_norm)
+    q_ratio = np.true_divide(q, q_norm)
+    r = np.log(np.true_divide(p_ratio, q_ratio))
+    return r
 
-#required arguments
-parser.add_argument('data', help='path for the input data')
-parser.add_argument('y_name', help='name of the column holding the (binary) target variable')
-parser.add_argument('x_name', help='name of the column holding the text')
+#returns interpolated weights for constructing the nb-svm
+def interpolate(w, beta):
+    return ((1 - beta) * (np.sum(w) / w.shape[1])) + (beta * w)
 
-#optional arguments for tuning the classifier's performance
-parser.add_argument('-lm', '--limit_features', default='yes', help='limit the number of features for the SVM? (yes or no)')
-parser.add_argument('-ft', '--features', type=int, default=10000, help='number of features for the SVM, if limited')
-parser.add_argument('-ng', '--ngrams', type=int, default=2, help='max ngram size')
-parser.add_argument('-k', '--n_folds', default=10, help='number of folds for cross-validation')
-parser.add_argument('-sm', '--split_method', default='train-test', help='how to split the data: train-test or other')
-parser.add_argument('-sv', '--split_var', help='variable used for splitting the data')
-parser.add_argument('-te', '--test_var', help='values of split_var to be used for testing; all others will be used for training')
+#finds the interpolation paramater beta that yields the highest accuracy
+def tune_beta(x, y, w, b, betas):
+    n = len(betas)
+    results = np.zeros([n, 2])
+    results[:,0] = betas
+    for i in range(0, n):
+        int_weights = interpolate(w, betas[i])
+        results[i,1] = accuracy(x, y, int_weights, b)
+    return results
 
-args = parser.parse_args()
+#returns SVM accuracy as a function of the C parameter
+def tune_C(x_tr, y_tr, x_te, y_te, c_params, beta=0.25, interpolate=False):
+    out = pd.DataFrame(np.zeros([len(c_params), 11]), columns=diag_names)
+    i = 0
+    for c_param in c_params:
+        print c_param
+        clf = LinearSVC(C=c_param).fit(x_tr, y_tr)
+        w, b = clf.coef_, clf.intercept_
+        if interpolate:
+            w = interpolate(clf.coef_, beta)
+            b = nb_bias
+        out.iloc[i,:] = np.array(diagnostics(x_te, y_te, w, b))
+        i += 1
+    out.iloc[:,0] = c_params
+    return out
 
-"""Global values for the SVM"""
-num_features = args.features
-interpolation_param = 0.25
+if __name__ == '__main__':
+	parser = argparse.ArgumentParser()
 
-#column names for the diagnostics data frame; just saving some space
-diag_names = ['ctf', 'tp', 'fp', 'tn', 'fn', 'se', 'sp', 'ppv', 'npv', 'acc', 'f']
+	#required arguments
+	parser.add_argument('data', help='path for the input data')
+	parser.add_argument('y_name', help='name of the column holding the (binary) target variable')
+	parser.add_argument('x_name', help='name of the column holding the text')
 
-"""Processing the text and training the SVMs"""
-#setting up the vectorizer
-if args.limit_features == 'yes':
-	print "\nMaking the word-count vectors, using %i features..." %int(num_features)
-	vectorizer = CountVectorizer(max_features=num_features, ngram_range=(1, args.ngrams), decode_error='replace', binary=True)
-else:
-	print "\nMaking the word-count vectors, using all features in the corpus..."
-	vectorizer = CountVectorizer(ngram_range=(1, args.ngrams), decode_error='replace', binary=True)
+	#optional arguments for tuning the classifier's performance
+	parser.add_argument('-lm', '--limit_features', default='yes', help='limit the number of features for the SVM? (yes or no)')
+	parser.add_argument('-ft', '--features', type=int, default=10000, help='number of features for the SVM, if limited')
+	parser.add_argument('-ng', '--ngrams', type=int, default=2, help='max ngram size')
+	parser.add_argument('-k', '--n_folds', default=10, help='number of folds for cross-validation')
+	parser.add_argument('-sm', '--split_method', default='train-test', help='how to split the data: train-test or other')
+	parser.add_argument('-sv', '--split_var', help='variable used for splitting the data')
+	parser.add_argument('-te', '--test_var', help='values of split_var to be used for testing; all others will be used for training')
 
-#importing the data
-full_set  = pd.read_csv(args.data)
-full_corpus = full_set[args.x_name]
-full_y = np.array(full_set[args.y_name])
+	args = parser.parse_args()
 
-#getting the tfidf matrices for the evaluations
-full_fit = vectorizer.fit_transform(full_corpus)
-full_names = vectorizer.get_feature_names()
-full_counts = full_fit.toarray()
+	"""Global values for the SVM"""
+	num_features = args.features
+	interpolation_param = 0.25
 
-#optional write to csv for the word-count matrix
-#pd.DataFrame(full_counts).to_csv('~/data/addm/full_counts.csv')
+	#column names for the diagnostics data frame; just saving some space
+	diag_names = ['ctf', 'tp', 'fp', 'tn', 'fn', 'se', 'sp', 'ppv', 'npv', 'acc', 'f']
 
-#invoking the custom splitter to divide the data
-print "Splitting the data into training and test sets..."
+	"""Processing the text and training the SVMs"""
+	#setting up the vectorizer
+	if args.limit_features == 'yes':
+		print "\nMaking the word-count vectors, using %i features..." %int(num_features)
+		vectorizer = CountVectorizer(max_features=num_features, ngram_range=(1, args.ngrams), decode_error='replace', binary=True)
+	else:
+		print "\nMaking the word-count vectors, using all features in the corpus..."
+		vectorizer = CountVectorizer(ngram_range=(1, args.ngrams), decode_error='replace', binary=True)
 
-if args.split_method == 'train-test':
-	X_train, X_test, y_train, y_test = train_test_split(full_counts, full_y)
+	#importing the data
+	full_set  = pd.read_csv(args.data)
+	full_corpus = full_set[args.x_name]
+	full_y = np.array(full_set[args.y_name])
 
-else:
-	train_indices = full_set[~full_set[args.split_var].isin([args.test_var])].index.tolist()
-	test_indices = full_set[full_set[args.split_var].isin([args.test_var])].index.tolist()
-	X_train = full_counts[train_indices, :]
-	X_test = full_counts[test_indices, :]
-	y_train = full_y[train_indices]
-	y_test = full_y[test_indices]
+	#getting the tfidf matrices for the evaluations
+	full_fit = vectorizer.fit_transform(full_corpus)
+	full_names = vectorizer.get_feature_names()
+	full_counts = full_fit.toarray()
+
+	#optional write to csv for the word-count matrix
+	#pd.DataFrame(full_counts).to_csv('~/data/addm/full_counts.csv')
+
+	#invoking the custom splitter to divide the data
+	print "Splitting the data into training and test sets..."
+
+	if args.split_method == 'train-test':
+		X_train, X_test, y_train, y_test = train_test_split(full_counts, full_y)
+
+	else:
+		train_indices = full_set[~full_set[args.split_var].isin([args.test_var])].index.tolist()
+		test_indices = full_set[full_set[args.split_var].isin([args.test_var])].index.tolist()
+		X_train = full_counts[train_indices, :]
+		X_test = full_counts[test_indices, :]
+		y_train = full_y[train_indices]
+		y_test = full_y[test_indices]
 	
-X_train_pos = X_train[np.where(y_train == 1)]
-X_train_neg = X_train[np.where(y_train == 0)]
+	X_train_pos = X_train[np.where(y_train == 1)]
+	X_train_neg = X_train[np.where(y_train == 0)]
 
-r_hat = log_count_ratio(X_train_pos, X_train_neg)
-X_train_nb = np.multiply(r_hat, X_train)
+	r_hat = log_count_ratio(X_train_pos, X_train_neg)
+	X_train_nb = np.multiply(r_hat, X_train)
 
-#setting up the test data; only evals from 2008
-X_test_nb = np.multiply(r_hat, X_test)
+	#setting up the test data; only evals from 2008
+	X_test_nb = np.multiply(r_hat, X_test)
 
-#setting the npos and nneg variables
-n_pos = X_train_pos.shape[0]
-n_neg = X_train_neg.shape[0]
-nb_bias = np.log(np.true_divide(n_pos, n_neg))
+	#setting the npos and nneg variables
+	n_pos = X_train_pos.shape[0]
+	n_neg = X_train_neg.shape[0]
+	nb_bias = np.log(np.true_divide(n_pos, n_neg))
 
-#training the standard SVM without NB features
-print "Training the SVM..."
-lsvc = LinearSVC()
-lsvc.fit(X_train, y_train)
-lsvc_acc = lsvc.score(X_test, y_test)
+	#training the standard SVM without NB features
+	print "Training the SVM..."
+	lsvc = LinearSVC()
+	lsvc.fit(X_train, y_train)
+	lsvc_acc = lsvc.score(X_test, y_test)
 
-#training the SVM with NB features but no interpolation
-print "Training the NB-SVM..."
-nbsvm = LinearSVC()
-nbsvm.fit(X_train_nb, y_train)
-trained_weights = nbsvm.coef_
-trained_bias = nbsvm.intercept_
-nbsvm_acc = nbsvm.score(X_test_nb, y_test)
+	#training the SVM with NB features but no interpolation
+	print "Training the NB-SVM..."
+	nbsvm = LinearSVC()
+	nbsvm.fit(X_train_nb, y_train)
+	trained_weights = nbsvm.coef_
+	trained_bias = nbsvm.intercept_
+	nbsvm_acc = nbsvm.score(X_test_nb, y_test)
 
 #finding the optimal interpolation paramater
 int_accs = tune_beta(X_test_nb, y_test, trained_weights, nb_bias, np.arange(0, 1, .025))
