@@ -1,131 +1,139 @@
-"Document classification with a random forest" 
+"Scott's script for training a random forest on the 2006 and 2008 ADDM evaluations" 
 import pandas as pd
 import numpy as np
-import math
 import sklearn
 import argparse
-from generic_functions import *
+from functions import *
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score, KFold
 
-
-#prints the top n features of a random forest by feature importance
-def top_features(features, names, n=10, reverse=False): 
-    start = 0    
-    stop = n-1
-    print "Top %s features are:" %n
-    if reverse:
-        stop = len(features)
-        start = stop - n-1
-    for index in features[start:stop]:
-        print(names[index])
-
-#performs a stepwise search for the optimal number of features in a random forest;
-#not implemented by default, but may be used for further model customization
-def tune_forests(full_model, x_train, y_train, x_test, y_test, min_features=1, max_features=200, n_estimators=1000):
+#performs a stepwise search for the optimal number of features in a trimmed random forest
+def tune(rf, min_features=1, max_features=200):
     out = pd.DataFrame(data=np.empty([max_features - min_features + 1, 2]), columns=['n_features', 'acc'])
     out['n_features'] =  range(min_features, max_features + 1)    
     for i in range(min_features, max_features + 1):
-        all_ftrs = full_model.feature_importances_
-        sort_ftrs = np.argsort(all_ftrs)[-i:]
-        clf = RandomForestClassifier(n_estimators=n_estimators)
-        clf = clf.fit(x_train[:, sort_ftrs], y_train)
-        acc = clf.score(x_test[:, sort_ftrs], y_test)
-        print "Number of features: %s" %i
-        print "Model accuracy: %s \n" %acc
-        out['acc'][i - min_features] = acc
+	all_ftrs = full_model.feature_importances_
+	sort_ftrs = np.argsort(all_ftrs)[-i:]
+	clf = RandomForestClassifier(n_estimators=n_estimators)
+	clf = clf.fit(x_train[:, sort_ftrs], y_train)
+	acc = clf.score(x_test[:, sort_ftrs], y_test)
+	print "Number of features: %s" %i
+	print "Model accuracy: %s \n" %acc
+	out['acc'][i - min_features] = acc
     return out
 
+#main class for the text-based random forest; has methods for loading and processing data,
+#as well as model-specific attributes like accuracy and feature names
+class TextRF:
+	def __init__(self):
+		self.accuracy = 0.0
+		self.shape = {'n_trees': 0, 'n_features': 0}
+		self.tuning_curve = pd.DataFrame()
+		self.feature_names = []
+		self.trimmed_features = []
+		self.top_features = []
+		
+		#setting attributes for the data
+		self.data = pd.DataFrame()
+		self.X, self.y = [], []
+		self.X_train, self.X_test = [], []
+		self.y_train, self.y_test = [], []
+	
+	#simple wrapper for saving the data frame to the RF object
+	def set_data(self, df):
+		self.data = df
+		return
+
+	def print_top_features(self):
+		for i in xrange(len(self.top_features)):
+			print self.top_features[i]
+		return
+
+	#another wrapper for the vectorization functions; optional, and will take a while
+	def process(self, df, x_name, y_name, method='tfidf', max_features=10000):
+		print "Vectorizing the corpus..."
+		if method == 'tfidf':
+			vectorizer = TfidfVectorizer(max_features)
+			full_fit = vectorizer.fit_transform(df[x_name])
+			full_counts = full_fit.toarray()
+			self.X = full_counts
+			self.y = np.array(df[y_name])
+			self.feature_names = vectorizer.get_feature_names()
+		self.split(self.X, self.y, self.feature_names)
+		return
+	
+	#splits the data into training and test sets; either called from self.process()
+	#or on its own when your text is already vectorized and divided into x and y
+	def split(self, x, y, names, split_method='train-test', split_var=None, test_val=None):
+		self.X = x
+		self.y = y
+		self.feature_names = names
+		if split_method == 'train-test':
+			self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(x, y)
+		elif split_method == 'var':
+			self.X_train, self.X_test, self.y_train, self.y_test = split_by_var(x, y, data)
+
+	#main function for training and testing the random forest
+	def run(self, trees=1000, top=100, verbose=True):
+		
+		#setting the shape parameter
+		self.shape = [trees, top]
+		
+		#training the RF on the docs
+		print "Training the random forest..."
+		rf = RandomForestClassifier(n_estimators=trees)
+		rf_train = rf.fit(self.X_train, self.y_train)
+		
+		#scoring the trained model
+		rf_test = rf.score(self.X_test, self.y_test)
+		
+		#trimming the tree to the top 90 features
+		all_features = rf_train.feature_importances_
+		sorted_features = np.argsort(all_features)[-top:]
+		sorted_features_1000 = np.argsort(all_features)[-1000:]
+		
+		full_trimmed = self.X[:, sorted_features]
+		train_trimmed = self.X_train[:, sorted_features]
+		test_trimmed = self.X_test[:, sorted_features]
+		
+		rf_trimmed = RandomForestClassifier(n_estimators=trees)
+		rf_trimmed_train = rf_trimmed.fit(train_trimmed, self.y_train)
+		rf_trimmed_test = rf_trimmed.score(test_trimmed, self.y_test)
+		
+		if verbose:
+			print "\nResults:"
+			print "Raw model accuracy is %0.4f" %rf_test
+			print "Trimmed model accuracy is %0.4f\n" %rf_trimmed_test
+		
+		self.accuracy = rf_trimmed_test
+		#self.tuning_curve = tune(rf, X_train, y_train, X_test) 
+
+#running an example of the model
 if __name__ == '__main__':
-
-	#setting up the command-line arguments
 	parser = argparse.ArgumentParser()
-	parser.add_argument('data', help='path for the input data')
-	parser.add_argument('y_name', help='name of the column holding the (binary) target variable')
+	
+	#positional arguments
+	parser.add_argument('data', help='data path for the corpus (in CSV format)')
 	parser.add_argument('x_name', help='name of the column holding the text')
-	parser.add_argument('-cr', '--cross_val', default='no', help='perform cross-validation on the training data?')
-	parser.add_argument('-k', '--n_folds', type=int, default=10, help='number of folds for cross-validation')
-	parser.add_argument('-ft', '--features', type=int, default=10000, help='max number of features to consider')
-	parser.add_argument('-ng', '--ngrams', type=int, default=3, help='max size of ngrams to calculate')
-	parser.add_argument('-vc', '--vectorizer', default='tfidf', help='which vectorizer to use')
-	parser.add_argument('-tr', '--trees', type=int, default=1000, help='how many trees to use in the random forest')
-	parser.add_argument('-tp', '--top', type=int, default=100, help='how many top features to use when trimming the trees')
-	parser.add_argument('-sm', '--split_method', default='train-test', help='how to split the data')
-	parser.add_argument('-sv', '--split_var', help='variable used for splitting the data')
-	parser.add_argument('-te', '--test_val', help='values of split_var to be used for testing')
-
+	parser.add_argument('y_name', help='name of the column holding the target variable')
+	
+	#optional arguments
+	parser.add_argument('-lm', '--limit_features', default='yes', help='limit the number of features for the RF? (yes or no)')
+	parser.add_argument('-ft', '--features', type=int, default=10000, help='number of features for the SVM, if limited')
+	parser.add_argument('-tr', '--n_trees', type=int, default=1000, help='number of trees to use in the RF')
+	parser.add_argument('-ng', '--ngrams', type=int, default=2, help='max ngram size')
+	parser.add_argument('-sm', '--split_method', default='train-test', help='split the data by year, train-test, or cross-val')
+	parser.add_argument('-sv', '--split_variable', default='year', help='variable to used for splitting the data')
+	parser.add_argument('-yr', '--test_val', help='which value of split_variable to use for the test data')
+	
 	args = parser.parse_args()
-
-	#tokenizing the text and fitting the RF to the training data
-	#vectorizer = CountVectorizer(max_features=10000, ngram_range=(1, 2), decode_error='replace', binary=True)
-	if args.vectorizer == 'tfidf':
-		vectorizer = TfidfVectorizer(max_features=args.features, 
-				ngram_range=(1, args.ngrams), decode_error='replace')
-	elif args.vectorizer == 'counts':
-		vectorizer = CountVectorizer(max_features=args.features, ngram_range=(1, args.ngrams), 
-				decode_error='replace', binary=False)
-	elif args.vectorizer == 'binary counts':
-		vectorizer = CountVectorizer(max_features=args.features, ngram_range=(1, args.ngrams),
-				decode_error='replace', binary=True)
-
-	full_set = pd.read_csv(args.data)
-	full_corpus = full_set[args.x_name]
-	full_y = full_set[args.y_name]
-
-	#getting the tfidf matrices for the evaluations
-	print "\nVectorizing the corpus..."
-	full_fit = vectorizer.fit_transform(full_corpus)
-	full_names = vectorizer.get_feature_names()
-	full_counts = full_fit.toarray()
-
-	if args.split_method == 'train-test':
-		X_train, X_test, y_train, y_test = train_test_split(full_counts, full_y)
-
-	else:
-		full_set[args.split_var] = [str(val) for val in full_set[args.split_var]]	
-		train_indices = full_set[~full_set[args.split_var].isin([args.test_val])].index.tolist()
-		test_indices = full_set[full_set[args.split_var].isin([args.test_val])].index.tolist()
-		print train_indices
-		X_train = full_counts[train_indices, :]
-		X_test = full_counts[test_indices, :]
-		y_train = full_y[train_indices]
-		y_test = full_y[test_indices]
-
-	print "Training the random forest..."
-	rf = RandomForestClassifier(n_estimators=args.trees)
-	rf_train = rf.fit(X_train, y_train)
-
-	#scoring the trained model
-	rf_test = rf.score(X_test, y_test)
-
-	#trimming the tree to the top 90 features
-	all_features = rf_train.feature_importances_
-	sorted_features = np.argsort(all_features)[-args.top:]
-	sorted_features_1000 = np.argsort(all_features)[-1000:]
-
-	full_trimmed = full_counts[:, sorted_features]
-	train_trimmed = X_train[:, sorted_features]
-	test_trimmed = X_test[:, sorted_features]
-
-	rf_trimmed = RandomForestClassifier(n_estimators=args.trees)
-	rf_trimmed_train = rf_trimmed.fit(train_trimmed, y_train)
-	rf_trimmed_test = rf_trimmed.score(test_trimmed, y_test)
-
-	if args.cross_val == 'yes':
-		print "Performing %i-fold cross-validation..." %args.n_folds
-		rf_cross = cross_val_score(rf, X_train, y_train, cv=args.n_folds)
-		rf_trimmed_cross = cross_val_score(rf_trimmed, X_train, y_train, cv=args.n_folds)
-		print "\nResults:"
-		print "With the full model, cross-val accuracy is %0.4f, and test accuracy is %0.4f" %(rf_cross.mean(), rf_test)
-		print "With the trimmed model, cross-val accuracy is %0.4f, and test accuracy is %0.4f\n" %(rf_trimmed_cross.mean(), rf_trimmed_test)
-
-	else:
-		print "\nResults:"
-		print "Raw model accuracy is %0.4f" %rf_test
-		print "Trimmed model accuracy is %0.4f\n" %rf_trimmed_test
-
-	top_features(sorted_features, full_names, reverse=True)
+	
+	#loading the data and training the RF
+	df = pd.read_csv(args.data)
+	mod = TextRF()
+	mod.process(df, args.x_name, args.y_name)
+	mod.run(trees=args.n_trees)
 
 
