@@ -7,8 +7,8 @@ This script runs a few models, starting with a pure MNB and leading up to the in
 Like the other scripts in this module, there are three positional arguments required to run the script:
  
   1. ```data```: the file path for the CSV holding both the raw text and the target variable
-  2. ```y_name```: the name of the column holding the target varizble
-  3. ```x_name```: the name of the column holding the the text
+  2. ```x_name```: the name of the column holding the text
+  3. ```y_name```: the name of the column holding the target variable
  
 There are also a number of optional arguments that allow for model customization and tuning:
 
