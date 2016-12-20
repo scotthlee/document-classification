@@ -15,7 +15,7 @@ A friendly reminder: These models may work well with your data, but they also ma
 ## sample code
 This line will train an NB-SVM on the imaginary docs.csv using the values in the 'sentiment' column as the target and the text in the 'text' column as the input. 
 ```
-$ python nbsvm.py '~/data/docs.csv' 'sentiment' 'text' -lm 'no' -ng 3 -sm 'train-test'
+$ python nbsvm.py '~/data/docs.csv' 'text' 'sentiment' -lm 'no' -ng 3 -sm 'train-test'
 ```
 
 The optional arguments specify that vectorizer should not limit the number features it considers; that the maximum n-gram size should be 3; and that the data should be split using sklearn's train_test() function. See the readme for [nbsvm.py](docs/nbsvm_README.md) for more details.
