@@ -10,7 +10,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score, KFold
 
 #performs a stepwise search for the optimal number of features in a trimmed random forest
-def tune(rf, min_features=1, max_features=200):
+def tune(model, min_features=1, max_features=200):
     out = pd.DataFrame(data=np.empty([max_features - min_features + 1, 2]), columns=['n_features', 'acc'])
     out['n_features'] =  range(min_features, max_features + 1)    
     for i in range(min_features, max_features + 1):
@@ -24,16 +24,24 @@ def tune(rf, min_features=1, max_features=200):
 	out['acc'][i - min_features] = acc
     return out
 
+#returns the top n features by importance in the TextRF
+def print_top_features(model, n=10):
+	print "\nThe top %i features are..." %n
+	for x in xrange(n):
+		print model.top_features[n]
+	return
+
 #main class for the text-based random forest; has methods for loading and processing data,
 #as well as model-specific attributes like accuracy and feature names
 class TextRF:
 	def __init__(self):
 		self.accuracy = 0.0
-		self.shape = {'n_trees': 0, 'n_features': 0}
-		self.tuning_curve = pd.DataFrame()
+		self.predictions = []
+		self.results = []
+		self.probs = []
+		self.shape = {}
 		self.feature_names = []
-		self.trimmed_features = []
-		self.top_features = []
+		self.feature_importances = []
 		
 		#setting attributes for the data
 		self.data = pd.DataFrame()
@@ -44,11 +52,6 @@ class TextRF:
 	#simple wrapper for saving the data frame to the RF object
 	def set_data(self, df):
 		self.data = df
-		return
-
-	def print_top_features(self):
-		for i in xrange(len(self.top_features)):
-			print self.top_features[i]
 		return
 
 	#another wrapper for the vectorization functions; optional, and will take a while
@@ -79,7 +82,7 @@ class TextRF:
 	def run(self, trees=1000, top=100, verbose=True):
 		
 		#setting the shape parameter
-		self.shape = [trees, top]
+		self.shape = {'n_trees':trees, 'n_features':top}
 		
 		#training the RF on the docs
 		print "Training the random forest..."
@@ -90,25 +93,29 @@ class TextRF:
 		rf_test = rf.score(self.X_test, self.y_test)
 		
 		#trimming the tree to the top 90 features
-		all_features = rf_train.feature_importances_
-		sorted_features = np.argsort(all_features)[-top:]
-		sorted_features_1000 = np.argsort(all_features)[-1000:]
+		importances = rf_train.feature_importances_
+		sorted_indices = np.argsort(importances)
+		trimmed_indices = np.array(sorted_indices[-top:])
 		
-		full_trimmed = self.X[:, sorted_features]
-		train_trimmed = self.X_train[:, sorted_features]
-		test_trimmed = self.X_test[:, sorted_features]
+		full_trimmed = self.X[:, trimmed_indices]
+		train_trimmed = self.X_train[:, trimmed_indices]
+		test_trimmed = self.X_test[:, trimmed_indices]
 		
 		rf_trimmed = RandomForestClassifier(n_estimators=trees)
 		rf_trimmed_train = rf_trimmed.fit(train_trimmed, self.y_train)
 		rf_trimmed_test = rf_trimmed.score(test_trimmed, self.y_test)
 		
+		#setting instance attributes using data from the trimmed model
+		self.predictions = pd.DataFrame(rf_trimmed.predict(test_trimmed))
+		self.probs = pd.DataFrame(rf_trimmed.predict_proba(test_trimmed), columns=[rf_trimmed.classes_])
+		self.results = pd.concat([self.probs, self.predictions, pd.DataFrame(self.y_test)], axis=1)
+		self.accuracy = rf_trimmed_test
+		self.feature_importances = importances
+		
 		if verbose:
 			print "\nResults:"
 			print "Raw model accuracy is %0.4f" %rf_test
 			print "Trimmed model accuracy is %0.4f\n" %rf_trimmed_test
-		
-		self.accuracy = rf_trimmed_test
-		#self.tuning_curve = tune(rf, X_train, y_train, X_test) 
 
 #running an example of the model
 if __name__ == '__main__':
