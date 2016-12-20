@@ -19,12 +19,6 @@ def log_count_ratio(pos_text, neg_text, alpha=1):
     r = np.log(np.true_divide(p_ratio, q_ratio))
     return r
 
-def nb_svm(x, y, w, b, C=1):
-    wt = w.transpose()
-    y = y.reshape(y.shape[0], 1)
-    l2_loss = np.square(np.maximum(0, 1 - y * (np.matmul(x, wt) + b)))
-    return np.matmul(w, wt) + C * np.sum(l2_loss)
-
 #returns interpolated weights for constructing the nb-svm
 def interpolate(w, beta):
     return ((1 - beta) * (np.sum(w) / w.shape[1])) + (beta * w)
