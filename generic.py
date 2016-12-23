@@ -73,30 +73,7 @@ class TextData:
 												split_var, test_val)
 		return 
 
-#wrapper for inspect.getargspec; helps navigate my less-than-ideal naming conventions
-def get_args(foo):
-	return inspect.getargspec(foo)
-
-"""General ML functions"""        
-#gets the diagnostic accuracy of a linear classifier; kinda pointless for an SVM, but still interesting
-def diagnostics(x, y, w, b, exp=False, cutoff=.5):
-    out = pd.DataFrame(np.zeros([1, 11]), columns=diag_names)
-    true_targets = y
-    if exp:
-        curr = prediction(x, w, b, exp=True)
-        curr[curr >= cutoff] = 1
-        curr[curr < cutoff] = 0
-    else:
-        curr = prediction(x, w, b)
-    curr = curr.reshape(true_targets.shape)
-    tab = pd.crosstab(curr, true_targets)
-    tp, fp, tn, fn = tab.iloc[1, 1], tab.iloc[1, 0], tab.iloc[0, 0], tab.iloc[0, 1]
-    se, sp, ppv, npv = np.true_divide([tp, tn, tp, tn], [tp+fn, tn+fp, tp+fp, tn+fn])
-    acc = np.true_divide(tp+tn, tp+tn+fp+fn)
-    f = 2 * np.true_divide(se * ppv, se + ppv)
-    out.iloc[0,:] = [cutoff, tp, fp, tn, fn, se, sp, ppv, npv, acc, f]
-    return out
-
+"""General ML functions"""      
 #returns the predicted outputs based on inputs, training weights, and training bias
 #exp=True will exponentiate the predicted values, transforming to [0, 1]
 def linear_prediction(x, w, b, neg=0, exp=False):
@@ -113,18 +90,4 @@ def linear_prediction(x, w, b, neg=0, exp=False):
 def accuracy(x, y, w, b):
     guess = linear_prediction(x, w, b)
     return np.true_divide(np.sum(guess.reshape(y.shape) == y), x.shape[0])
-
-#janky function for exping the weights in a linear model and getting a "roc" curve from the scores
-def roc(x, y, w, b, exp=False, cutoff=.5, by=.01):
-    exp_guesses = prediction(x, w, b, exp=True)
-    th = np.arange(min(exp_guesses) + by, 1, by)
-    n = len(th)
-    out = pd.DataFrame(np.zeros([n, 11]), columns=diag_names)    
-    i = 0
-    for cutoff in th:
-        out.iloc[i,:] = np.array(diagnostics(x, y, w, b, exp, cutoff))
-        i += 1
-    return out
-
-
 
