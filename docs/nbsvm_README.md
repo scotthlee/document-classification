@@ -21,6 +21,4 @@ There are also a number of optional arguments that allow for model customization
 
 ## Classes and Functions
 
-There are two models included here: the standard MNB classifier, and the (M)NB-SVM. Each gets its own class, which can be instantiated by ```TextMNB()``` and ```TextNBSVM```, respectively. Like the other classes in this module, these guys follow the ScikitLearn style of training and testing, so they can be trainined and tested like this:
-
- ```> clf = TextNBSVM()```
+There are two models included here: the standard MNB classifier, and the (M)NB-SVM. Each gets its own class, which can be instantiated by ```TextMNB()``` and ```TextNBSVM()```, respectively. Like the other classes in this module, these guys follow the ScikitLearn style of training and testing, so they can be fit and scored using the standard ```.fit()``` and ```.score()``` functions. If your corpus is already converted to a binary document-term matrix, you can fit the models directly; otherwise, process the text first using the ```TextData()``` class and ```.process()``` and ```.split()``` functions included in [generic.py](/document_classification/d)cs/generic_README.md).
