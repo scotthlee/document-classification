@@ -106,7 +106,7 @@ if __name__ == '__main__':
 	parser.add_argument('-tr', '--n_trees', type=int, default=1000, help='number of trees to use in the RF')
 	parser.add_argument('-ng', '--ngrams', type=int, default=2, help='max ngram size')
 	parser.add_argument('-sm', '--split_method', default='train-test', help='split the data by year, train-test, or cross-val')
-	parser.add_argument('-sv', '--split_variable', default='year', help='variable to used for splitting the data')
+	parser.add_argument('-sv', '--split_variable', help='variable to used for splitting the data')
 	parser.add_argument('-yr', '--test_val', help='which value of split_variable to use for the test data')
 	
 	args = parser.parse_args()
