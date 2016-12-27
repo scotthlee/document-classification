@@ -26,3 +26,5 @@ To run these scripts, you'll need the Pandas, ScikitLearn, and Scipy/Numpy modul
 
 ## references
 S. Wang, C. Manning. 2012. Baselines and bigrams: Simple, good sentiment and topic classificiation. In *Proceedings of ACL 2012*. [PDF](http://nlp.stanford.edu/pubs/sidaw12_simple_sentiment.pdf)
+
+D. Blei, A. Ng, M. Jordan. 2003. Latent dirichlet allocation. *Journal of Machine Learning Research*, 3 (Jan), 993-1022. [PDF] (http://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf) 
