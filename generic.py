@@ -1,5 +1,5 @@
 
-"""Functions for training and tuning supervised classification models on the autism data"""
+"""Functions for training and tuning supervised classification models on text data"""
 
 import math
 import numpy as np
