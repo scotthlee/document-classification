@@ -1,5 +1,5 @@
 
-"""Scott's script for training SVMs a la Wang and Manning (2012) on the 2006 and 2008 ADDM evaluations"""
+"""Scott's script for training SVMs a la Wang and Manning (2012)"""
 import argparse
 import pandas as pd
 import numpy as np
