@@ -40,14 +40,15 @@ class TextRF:
 		self.feature_importances = []
 		self.trees = trees
 		self.mod = []
+		self.pruned = False
 		
 		#setting attributes for the data
 		self.X, self.y = [], []
 		self.X_train, self.X_test = [], []
 		self.y_train, self.y_test = [], []
-	
+		
 	#main function for training and testing the random forest
-	def fit(self, X, y, top=100, jobs=-1, verbose=False, prune=True):
+	def fit(self, X, y, top=100, jobs=-1, verbose=True, prune=True):
 		
 		#passing the training data up to the instance
 		self.X_train, self.y_train = X, y
@@ -71,21 +72,27 @@ class TextRF:
 			#training a new forest on the pruned data
 			mod = RandomForestClassifier(n_estimators=self.trees, class_weight='balanced_subsample', n_jobs=jobs)
 			mod.fit(self.X_train, self.y_train)
+			
+			#passing attributes up to the instance			
+			self.feature_importances = importances
+			self.pruned = True
 		
-		#setting instance attributes using data from the trimmed model
+		#setting the model attribute for the instance
 		self.mod = mod
-		self.feature_importances = importances
-	
+		
 	#wrappers for the sklearn functions; admittedly redundant	
 	def score(self, X, y):
-		self.X_test = X[:, self.feature_indices]
+		if self.pruned:
+			self.X_test = X[:, self.feature_indices]
+		else:
+			self.X_test = X
 		self.y_test = y
 		return self.mod.score(self.X_test, y)
-
+	
 	def predict(self, X, y):
 		self.X_test = X[:, self.feature_indices]
 		return self.mod.predict(self.X_test)
- 
+ 	
 	def predict_proba(self, X, y):
 		self.X_test = X[:, self.feature_indices]
 		return self.mod.predict_proba(self.X_test)		
