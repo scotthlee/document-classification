@@ -143,13 +143,13 @@ def platt_loss(vals, preds, y):
 	loss = -np.sum(y*np.log(p) + (1 - y)*np.log(1 - p))	
 	return loss
 
-#calculates the sigmoid transformation of the linear predictions
+#calculates the sigmoid transformation of the linear predictions (for Platt scaling)
 def platt_probs(A, B, preds):
 	p =  np.true_divide(1, (1 + np.exp(A*preds + B)))
 	p = p.reshape(p.shape[0], )
 	return p
 
-#uses gradient descent to scale the 
+#uses gradient descent to scale the outputs from an SVM
 def platt_scale(X, y, mod, max_iter=1000, step=.001):
 	#mnb-ifying the input
 	X = np.multiply(mod.r, X)
@@ -168,7 +168,7 @@ def platt_scale(X, y, mod, max_iter=1000, step=.001):
 	for i in range(max_iter):
 		vals -= gradient(vals, preds, y)*step
 	
-	#returning the 
+	#returning the scaled values
 	A = vals[0]
 	B = vals[1]
 	probs = platt_probs(A, B, preds)
