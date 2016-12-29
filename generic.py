@@ -118,18 +118,6 @@ def accuracy(x, y, w, b):
     guess = linear_prediction(x, w, b)
     return np.true_divide(np.sum(guess.reshape(y.shape) == y), x.shape[0])
 
-#janky function for exping the weights in a linear model and getting a "roc" curve from the scores
-def roc(x, y, w, b, exp=False, cutoff=.5, by=.01):
-    exp_guesses = prediction(x, w, b, exp=True)
-    th = np.arange(min(exp_guesses) + by, 1, by)
-    n = len(th)
-    out = pd.DataFrame(np.zeros([n, 11]), columns=diag_names)    
-    i = 0
-    for cutoff in th:
-        out.iloc[i,:] = np.array(diagnostics(x, y, w, b, exp, cutoff))
-        i += 1
-    return out
-
 #simple function for getting t from y (for Platt scaling)
 def y_to_t(y):
 	#quick type change, just in case
