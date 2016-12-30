@@ -1,5 +1,6 @@
 
 """Functions for training and tuning supervised classification models on the autism data"""
+
 import math
 import autograd.numpy as np
 import sklearn
@@ -118,6 +119,12 @@ def accuracy(x, y, w, b):
     guess = linear_prediction(x, w, b)
     return np.true_divide(np.sum(guess.reshape(y.shape) == y), x.shape[0])
 
+#converts tf-idf matrices to binary count matrices
+def tfidf_to_counts(data):
+	data[np.where(data > 0)] = 1
+	return data
+
+"""Functions for implementing Platt scaling with SVMs"""
 #simple function for getting t from y (for Platt scaling)
 def y_to_t(y):
 	#quick type change, just in case
@@ -143,13 +150,13 @@ def platt_loss(vals, preds, y):
 	loss = -np.sum(y*np.log(p) + (1 - y)*np.log(1 - p))	
 	return loss
 
-#calculates the sigmoid transformation of the linear predictions (for Platt scaling)
+#calculates the sigmoid transformation of the linear predictions
 def platt_probs(A, B, preds):
 	p =  np.true_divide(1, (1 + np.exp(A*preds + B)))
 	p = p.reshape(p.shape[0], )
 	return p
 
-#uses gradient descent to scale the outputs from an SVM
+#uses gradient descent to scale the 
 def platt_scale(X, y, mod, max_iter=1000, step=.001):
 	#mnb-ifying the input
 	X = np.multiply(mod.r, X)
@@ -168,7 +175,7 @@ def platt_scale(X, y, mod, max_iter=1000, step=.001):
 	for i in range(max_iter):
 		vals -= gradient(vals, preds, y)*step
 	
-	#returning the scaled values
+	#returning the 
 	A = vals[0]
 	B = vals[1]
 	probs = platt_probs(A, B, preds)

@@ -145,8 +145,9 @@ class TextNBSVM:
 		self.beta = best_beta
 		return inter_acc
 		
-	def predict(self, verbose=True):		
-		return linear_prediction(self.X_test_nb, interpolate(self.coef_, self.beta), self.bias).reshape(self.y_test.shape)
+	def predict(self, X, verbose=True):	
+		X = np.multiply(self.r, X)	
+		return linear_prediction(X, interpolate(self.coef_, self.beta), self.bias).reshape(X.shape[0])
 			
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
