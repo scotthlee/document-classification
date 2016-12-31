@@ -27,7 +27,7 @@ class RF_SVM:
 		forest = TextRF()
 		svm = TextNBSVM()
 		forest.fit(data.X_train, data.y_train)
-		svm.fit(tfidf_to_counts(data.X_train), data.y_train)
+		svm.fit(data.X_train, data.y_train)
 		
 		#setting class attributes
 		self.rf = forest
@@ -51,12 +51,48 @@ class RF_SVM:
 	#returns binary class predictions for the separate models
 	def predict(self, X):
 		rf_preds = self.rf.predict(X).reshape(X.shape[0], 1)
-		svm_preds = self.nbsvm.predict(tfidf_to_counts(X)).reshape(X.shape[0], 1)
+		svm_preds = self.nbsvm.predict(X).reshape(X.shape[0], 1)
 		return np.concatenate((rf_preds, svm_preds), axis=1)
 	
 	#returns probabilities for the test data
 	def probs(self, X, y):
 		rf_probs = self.rf.predict_proba(X)[:,1].reshape(X.shape[0], 1)
-		svm_probs = platt_scale(tfidf_to_counts(X), y, self.nbsvm)['probs'].reshape(X.shape[0], 1)
+		svm_probs = platt_scale(X, y, self.nbsvm)['probs'].reshape(X.shape[0], 1)
 		probs = np.concatenate((rf_probs, svm_probs), axis=1)
 		return probs
+
+#extending the RF-SVM to other model types
+class Ensemble:
+	def __init__(self):
+		self.mods = {}
+		self.accs = {}
+		self.data = []
+	
+	#adds a model to the ensemble
+	def add(self, model):
+		self.mods[model.__name__] = model
+		self.accs[model.__name__] = 0.0
+		return
+	
+	#removes a model from the ensemble
+	def remove(self, name):
+		del self.mods[name]
+		return
+	
+	#fitting the models to the training data
+	def fit(self, X, y):
+		for mod in self.mods:
+			self.mods.get(mod).fit(X, y)
+		return
+	
+	#scoring the models on the test data
+	def score_sep(self, X, y, verbose=True):
+		for mod in self.mods:
+			self.accs[mod] = self.mods.get(mod).score(X, y)
+		if verbose:
+			print self.accs
+		return
+	
+	#scoring the ensemble on the test data
+	def score(self, X, y, verbose=True):
+		return

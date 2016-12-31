@@ -1,8 +1,10 @@
-"Scott's script for training a random forest for document classification" 
+"Scott's script for training a random forest docs" 
 import pandas as pd
 import numpy as np
 import sklearn
 import argparse
+import generic
+
 from generic import *
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -36,6 +38,7 @@ def print_top_features(model, n=10):
 class TextRF:
 	def __init__(self, trees=1000):
 		#setting attributes for the RF
+		self.__name__ = 'rf'
 		self.feature_names = []
 		self.feature_importances = []
 		self.trees = trees
@@ -89,11 +92,11 @@ class TextRF:
 		self.y_test = y
 		return self.mod.score(self.X_test, y)
 	
-	def predict(self, X, y):
+	def predict(self, X):
 		self.X_test = X[:, self.feature_indices]
 		return self.mod.predict(self.X_test)
  	
-	def predict_proba(self, X, y):
+	def predict_proba(self, X):
 		self.X_test = X[:, self.feature_indices]
 		return self.mod.predict_proba(self.X_test)		
 			
@@ -114,7 +117,7 @@ if __name__ == '__main__':
 	parser.add_argument('-ng', '--ngrams', type=int, default=2, help='max ngram size')
 	parser.add_argument('-sm', '--split_method', default='train-test', help='split the data by year, train-test, or cross-val')
 	parser.add_argument('-sv', '--split_variable', help='variable to used for splitting the data')
-	parser.add_argument('-yr', '--test_val', help='which value of split_variable to use for the test data')
+	parser.add_argument('-tv', '--test_val', help='which value of split_variable to use for the test data')
 	
 	args = parser.parse_args()
 	

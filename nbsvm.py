@@ -1,4 +1,3 @@
-
 """Scott's script for training SVMs a la Wang and Manning (2012)"""
 import argparse
 import pandas as pd
@@ -16,7 +15,13 @@ def log_count_ratio(pos_text, neg_text, alpha=1):
     q_ratio = np.true_divide(q, q_norm)
     r = np.log(np.true_divide(p_ratio, q_ratio))
     return r
-    
+
+def nb_svm(x, y, w, b, C=1):
+    wt = w.transpose()
+    y = y.reshape(y.shape[0], 1)
+    l2_loss = np.square(np.maximum(0, 1 - y * (np.matmul(x, wt) + b)))
+    return np.matmul(w, wt) + C * np.sum(l2_loss)
+
 #returns interpolated weights for constructing the nb-svm
 def interpolate(w, beta):
 	return ((1 - beta) * (np.sum(w) / w.shape[1])) + (beta * w)
@@ -31,9 +36,25 @@ def tune_beta(x, y, w, b, betas):
         results[i, 1] = accuracy(x, y, int_weights, b)
     return results
 
+#tries to find the best C parameter for the SVM; probably not very useful
+def tune_C(x_tr, y_tr, x_te, y_te, c_params, beta=0.25, interpolate=False):
+    out = pd.DataFrame(np.zeros([len(c_params), 11]), columns=diag_names)
+    i = 0
+    for c_param in c_params:
+        clf = LinearSVC(C=c_param).fit(x_tr, y_tr)
+        w, b = clf.coef_, clf.intercept_
+        if interpolate:
+            w = interpolate(clf.coef_, beta)
+            b = nb_bias
+        out.iloc[i,:] = np.array(diagnostics(x_te, y_te, w, b))
+        i += 1
+    out.iloc[:,0] = c_params
+    return out
+
 #class for the MNB classifier
 class TextMNB:
 	def __init__(self):
+		self.__name__ = 'mnb'
 		self.X, self.y = [], []
 		self.X_train, self.X_test = [], []
 		self.y_train, self.y_test = [], []
@@ -83,6 +104,7 @@ class TextMNB:
 class TextNBSVM:
 	def __init__(self):
 		#setting attributes for the data
+		self.__name__ = 'nbsvm'
 		self.X, self.y = [], []
 		self.X_train, self.X_test = [], []
 		self.y_train, self.y_test = [], []
@@ -100,6 +122,7 @@ class TextNBSVM:
 	#loads the data object and saves the train/test sets as instance attributes
 	def fit(self, X, y, verbose=True):
 		#setting data attributes for the model instance
+		X = tfidf_to_counts(X)
 		self.X_train, self.y_train = X, y
 		
 		#splitting by target class so we can calculate the log-count ratio
@@ -127,34 +150,34 @@ class TextNBSVM:
 		self.bias = nbsvm.intercept_
 
 	#trains, tests, and assesses the performance of the model
-	def score(self, X, y, verbose=True):
+	def score(self, X, y):
 		#setting data attributes for the model instance
+		X = tfidf_to_counts(X)
 		self.X_test, self.y_test = X, y
 		self.X_test_nb = np.multiply(self.r, self.X_test)
-		
+
 		#finding the best interpolation parameter given the data
 		int_accs = tune_beta(self.X_test_nb, self.y_test, self.coef_, self.bias, np.arange(0, 1.025, .025))
 		inter_acc = int_accs[np.argsort(int_accs[:,1])[-1], 1]
 		best_beta = int_accs[np.argsort(int_accs[:,1])[-1], 0]
 		self.int_coef_ = interpolate(self.coef_, best_beta)
 		
-		if verbose:
-			print "Interpolated model accuracy is %0.4f" %inter_acc
-			print "Best interpolation parameter is %s\n" %best_beta
-		
 		self.beta = best_beta
 		return inter_acc
-		
-	def predict(self, X, verbose=True):	
-		X = np.multiply(self.r, X)	
+	
+	#returns binary class predictions	
+	def predict(self, X, verbose=True):
+		X = tfidf_to_counts(X)
+		X = np.multiply(self.r, X)		
 		return linear_prediction(X, interpolate(self.coef_, self.beta), self.bias).reshape(X.shape[0])
+
 			
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	
 	#positional arguments
 	parser.add_argument('data', help='path for the input data')
-	parser.add_argument('x_name',help='name of the column holding the text')
+	parser.add_argument('x_name', help='name of the column holding the text')
 	parser.add_argument('y_name', help='name of the column holding the target values')
 
 	#optional arguments for tuning
@@ -162,9 +185,9 @@ if __name__ == '__main__':
 	parser.add_argument('-ft', '--features', type=int, default=35000, help='number of features for the SVM, if limited')
 	parser.add_argument('-ng', '--ngrams', type=int, default=2, help='max ngram size')
 	parser.add_argument('-sm', '--split_method', default='train-test', help='split the data by var(iable), train-test, or cross-val')
-	parser.add_argument('-sv', '--split_variable', default='year', help='which variable to use for splitting')
-	parser.add_argument('-tv', '--test_value', default=2008, help='which value of --split_variable to use for testing')
-	parser.add_argument('-vb', '--verbose', default=False, help='should functions print updates as they go?')
+	parser.add_argument('-sv', '--split_variable', help='which variable to use for splitting')
+	parser.add_argument('-tv', '--test_value', help='which value of --split_variable to use for testing')
+	parser.add_argument('-vb', '--verbose', default=True, help='should functions print updates as they go?')
 	args = parser.parse_args()
 
 	#loading and processing the data

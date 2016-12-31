@@ -1,6 +1,4 @@
-
-"""Functions for training and tuning supervised classification models on the autism data"""
-
+"""Functions for training and tuning supervised classification models"""
 import math
 import autograd.numpy as np
 import sklearn
@@ -157,8 +155,10 @@ def platt_probs(A, B, preds):
 	return p
 
 #uses gradient descent to scale the 
-def platt_scale(X, y, mod, max_iter=1000, step=.001):
+def platt_scale(X, y, mod, max_iter=1000, step=.001, bin=True):
 	#mnb-ifying the input
+	if bin:
+		X = tfidf_to_counts(X)
 	X = np.multiply(mod.r, X)
 	
 	#getting variables for the Platt scaling		
