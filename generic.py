@@ -117,6 +117,18 @@ def accuracy(x, y, w, b):
     guess = linear_prediction(x, w, b)
     return np.true_divide(np.sum(guess.reshape(y.shape) == y), x.shape[0])
 
+#janky function for exping the weights in a linear model and getting a "roc" curve from the scores
+def roc(x, y, w, b, exp=False, cutoff=.5, by=.01):
+    exp_guesses = prediction(x, w, b, exp=True)
+    th = np.arange(min(exp_guesses) + by, 1, by)
+    n = len(th)
+    out = pd.DataFrame(np.zeros([n, 11]), columns=diag_names)    
+    i = 0
+    for cutoff in th:
+        out.iloc[i,:] = np.array(diagnostics(x, y, w, b, exp, cutoff))
+        i += 1
+    return out
+
 #converts tf-idf matrices to binary count matrices
 def tfidf_to_counts(data):
 	data[np.where(data > 0)] = 1
@@ -155,10 +167,8 @@ def platt_probs(A, B, preds):
 	return p
 
 #uses gradient descent to scale the 
-def platt_scale(X, y, mod, max_iter=1000, step=.001, bin=True):
+def platt_scale(X, y, mod, max_iter=1000, step=.001):
 	#mnb-ifying the input
-	if bin:
-		X = tfidf_to_counts(X)
 	X = np.multiply(mod.r, X)
 	
 	#getting variables for the Platt scaling		
@@ -180,5 +190,3 @@ def platt_scale(X, y, mod, max_iter=1000, step=.001, bin=True):
 	B = vals[1]
 	probs = platt_probs(A, B, preds)
 	return {'A':A, 'B':B, 'probs':probs}
-
-

@@ -170,8 +170,12 @@ class TextNBSVM:
 		X = tfidf_to_counts(X)
 		X = np.multiply(self.r, X)		
 		return linear_prediction(X, interpolate(self.coef_, self.beta), self.bias).reshape(X.shape[0])
-
-			
+		
+	#returns predicted probabilities using Platt scaling
+	def predict_proba(self, X, y):
+		X = tfidf_to_counts(X)
+		return platt_scale(X, y, self)
+		
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	

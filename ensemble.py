@@ -11,62 +11,14 @@ from generic import *
 from nbsvm import *
 from rf import *
 
-#holder class for the RF-NBSVM ensemble
-class RF_SVM:
-	def __init__(self):
-		self.rf = []
-		self.nbsvm = []
-		self.data = []
-	
-	#fitting the separate models; input is a TextData instance
-	def fit(self, data):
-		#importing the data; X should be a TF-IDF matrix
-		self.data = data
-		
-		#fitting the models
-		forest = TextRF()
-		svm = TextNBSVM()
-		forest.fit(data.X_train, data.y_train)
-		svm.fit(data.X_train, data.y_train)
-		
-		#setting class attributes
-		self.rf = forest
-		self.nbsvm = svm
-	
-	#averages and scores the separate probabilities
-	def score(self, X, y, method='geometric', threshold=0.5):
-		if method =='geometric':
-			probs = self.probs(X, y)
-			mean_probs = gmean(probs, axis=1).reshape(X.shape[0], 1)
-			all_probs = np.concatenate((probs, mean_probs), axis=1)
-			guesses = [int(x >= threshold) for x in mean_probs]
-			
-			#getting the accuracy of the three classifiers
-			rf_acc = self.rf.score(X, y)
-			svm_acc = self.nbsvm.score(X, y, verbose=False)
-			acc = np.true_divide(np.sum(guesses == y), len(probs))
-			
-		return {'rf_acc':rf_acc, 'svm_acc':svm_acc, 'ens_acc':acc}
-	
-	#returns binary class predictions for the separate models
-	def predict(self, X):
-		rf_preds = self.rf.predict(X).reshape(X.shape[0], 1)
-		svm_preds = self.nbsvm.predict(X).reshape(X.shape[0], 1)
-		return np.concatenate((rf_preds, svm_preds), axis=1)
-	
-	#returns probabilities for the test data
-	def probs(self, X, y):
-		rf_probs = self.rf.predict_proba(X)[:,1].reshape(X.shape[0], 1)
-		svm_probs = platt_scale(X, y, self.nbsvm)['probs'].reshape(X.shape[0], 1)
-		probs = np.concatenate((rf_probs, svm_probs), axis=1)
-		return probs
-
-#extending the RF-SVM to other model types
+#generalizing the RF-SVM class
 class Ensemble:
 	def __init__(self):
 		self.mods = {}
 		self.accs = {}
 		self.data = []
+		self.probs = []
+		self.__name__ = 'Ensemble'
 	
 	#adds a model to the ensemble
 	def add(self, model):
@@ -77,6 +29,7 @@ class Ensemble:
 	#removes a model from the ensemble
 	def remove(self, name):
 		del self.mods[name]
+		del self.accs[name]
 		return
 	
 	#fitting the models to the training data
@@ -94,5 +47,25 @@ class Ensemble:
 		return
 	
 	#scoring the ensemble on the test data
-	def score(self, X, y, verbose=True):
-		return
+	def score(self, X, y, method='geometric', threshold=0.5, erbose=True):
+		probs = self.predict_proba(X, y)
+		if method == 'geometric':
+			mean_probs = gmean(probs, axis=1)bv bg
+		guesses = [int(x >= threshold) for x in mean_probs]
+		acc = np.true_divide(np.sum(guesses == y), len(y))
+		return acc
+	
+	#gets the predicted probabilities of the test data
+	def predict_proba(self, X, y):
+		probs = pd.DataFrame(np.zeros([X.shape[0], len(self.mods)]))
+		probs.columns = self.mods.keys()
+		for i in range(len(self.mods)):
+			if self.mods.keys()[i] != 'nbsvm':
+				probs.iloc[:, i] = self.mods.values()[i].predict_proba(X)[:,1]
+			else:
+				probs.iloc[:, i] = self.mods['nbsvm'].predict_proba(X, y)['probs']
+		return probs
+			
+
+		
+		
