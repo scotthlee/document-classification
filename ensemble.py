@@ -80,6 +80,7 @@ if __name__ == '__main__':
 	parser.add_argument('-ft', '--features', type=int, default=35000, help='number of features, if limited')
 	parser.add_argument('-ng', '--ngrams', type=int, default=2, help='max ngram size')
 	parser.add_argument('-vm', '--vote_method', default='geometric', help='how to combine the class probabilities for scoring')
+	parser.add_argument('-vc', '--vectorizer', default='tfidf', help='how to vectorize the corpus')
 	parser.add_argument('-sm', '--split_method', default='train-test', help='split the data by var(iable), train-test, or cross-val')
 	parser.add_argument('-sv', '--split_variable', help='which variable to use for splitting')
 	parser.add_argument('-tv', '--test_value', help='which value of --split_variable to use for testing')
@@ -90,9 +91,9 @@ if __name__ == '__main__':
 	df = pd.read_csv(args.data)
 	d = TextData()
 	if args.limit_features:
-		d.process(df, args.x_name, args.y_name, max_features=args.features, verbose=args.verbose)
+		d.process(df, args.x_name, args.y_name, method=args.vectorizer, max_features=args.features, verbose=args.verbose)
 	else:
-		d.process(df, args.x_name, args.y_name, max_features=None, verbose=args.verbose)
+		d.process(df, args.x_name, args.y_name, method=args.vectorizer, max_features=None, verbose=args.verbose)
 	
 	#getting the training and test sets	
 	d.split(args.split_method, args.split_variable, args.test_value)
