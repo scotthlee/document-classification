@@ -179,14 +179,14 @@ def platt_scale(X, y, mod, max_iter=1000, step=.001):
 	B = np.log(np.true_divide(n_neg + 1, n_pos + 1))		
 	preds = linear_prediction(X, mod.int_coef_, mod.bias, binary=False)
 	
-	#minimizing A and B
+	#minimizing A and B via gradient descent
 	vals = np.array([A, B])
 	gradient = jacobian(platt_loss)
 	for i in range(max_iter):
 		vals -= gradient(vals, preds, y)*step
 	
-	#returning the 
+	#returning the probabilities
 	A = vals[0]
 	B = vals[1]
 	probs = platt_probs(A, B, preds)
-	return {'A':A, 'B':B, 'probs':probs}
+	return probs

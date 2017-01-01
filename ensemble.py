@@ -50,7 +50,7 @@ class Ensemble:
 	def score(self, X, y, method='geometric', threshold=0.5, erbose=True):
 		probs = self.predict_proba(X, y)
 		if method == 'geometric':
-			mean_probs = gmean(probs, axis=1)bv bg
+			mean_probs = gmean(probs, axis=1)
 		guesses = [int(x >= threshold) for x in mean_probs]
 		acc = np.true_divide(np.sum(guesses == y), len(y))
 		return acc
@@ -63,9 +63,48 @@ class Ensemble:
 			if self.mods.keys()[i] != 'nbsvm':
 				probs.iloc[:, i] = self.mods.values()[i].predict_proba(X)[:,1]
 			else:
-				probs.iloc[:, i] = self.mods['nbsvm'].predict_proba(X, y)['probs']
+				probs.iloc[:, i] = self.mods['nbsvm'].predict_proba(X, y)
 		return probs
 			
+if __name__ == '__main__':
+	parser = argparse.ArgumentParser()
+	
+	#positional arguments
+	parser.add_argument('data', help='path for the input data')
+	parser.add_argument('x_name', help='name of the column holding the text')
+	parser.add_argument('y_name', help='name of the column holding the target values')
 
-		
-		
+	#optional arguments for tuning
+	parser.add_argument('-lm', '--limit_features', type=bool, default=True, help='limit the number of features?')
+	parser.add_argument('-ft', '--features', type=int, default=35000, help='number of features, if limited')
+	parser.add_argument('-ng', '--ngrams', type=int, default=2, help='max ngram size')
+	parser.add_argument('-vm', '--vote_method', default='geometric', help='how to combine the class probabilities for scoring')
+	parser.add_argument('-sm', '--split_method', default='train-test', help='split the data by var(iable), train-test, or cross-val')
+	parser.add_argument('-sv', '--split_variable', help='which variable to use for splitting')
+	parser.add_argument('-tv', '--test_value', help='which value of --split_variable to use for testing')
+	parser.add_argument('-vb', '--verbose', default=True, help='should functions print updates as they go?')
+	args = parser.parse_args()
+
+	#loading and processing the data
+	df = pd.read_csv(args.data)
+	d = TextData()
+	if args.limit_features:
+		d.process(df, args.x_name, args.y_name, max_features=args.features, verbose=args.verbose)
+	else:
+		d.process(df, args.x_name, args.y_name, max_features=None, verbose=args.verbose)
+	
+	#getting the training and test sets	
+	d.split(args.split_method, args.split_variable, args.test_value)
+	
+	#adding the models
+	ens = Ensemble()
+	ens.add(TextNBSVM())
+	ens.add(TextRF())
+	ens.fit(d.X_train, d.y_train)
+	ens.score_sep(d.X_test, d.y_test)
+	acc = ens.score(d.X_test, d.y_test, method=args.vote_method)
+	if args.verbose:
+		print 'Results:'
+		print ens.accs
+		print 'Ensemble accuracy is %0.4f' %acc
+	
