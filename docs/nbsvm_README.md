@@ -4,7 +4,7 @@ This script runs a few models, starting with a pure MNB and leading up to the in
 
 ## Classes and Functions
 
-There are two models included here: the standard MNB classifier, and the (M)NB-SVM. Each gets its own class, which can be instantiated by ```TextMNB()``` and ```TextNBSVM()```, respectively. Like the other classes in this module, these guys follow the ScikitLearn style of training and testing, so they can be fit and scored using the standard ```.fit()``` and ```.score()``` functions. If your corpus is already converted to a binary document-term matrix, you can fit the models directly; otherwise, process the text first using the ```TextData()``` class and ```.process()``` and ```.split()``` functions included in [generic.py](document_classification/docs/generic_README.md).
+There are two models included here: the standard MNB classifier, and the (M)NB-SVM. Each gets its own class, which can be instantiated by ```TextMNB()``` and ```TextNBSVM()```, respectively. Like the other classes in this module, these guys follow the ScikitLearn style of training and testing, so they can be fit and scored using the standard ```.fit()``` and ```.score()``` functions. If your corpus is already converted to a binary document-term matrix, you can fit the models directly; otherwise, process the text first using the ```TextData()``` class and ```.process()``` and ```.split()``` functions included in [generic.py](generic_README.md).
 
 ## Command-line Arguments
 
