@@ -64,6 +64,7 @@ class Ensemble:
 				probs.iloc[:, i] = self.mods.values()[i].predict_proba(X)[:,1]
 			else:
 				probs.iloc[:, i] = self.mods['nbsvm'].predict_proba(X, y)
+		probs[probs == 0] = 0.0000001
 		return probs
 			
 if __name__ == '__main__':
@@ -101,10 +102,10 @@ if __name__ == '__main__':
 	ens.add(TextNBSVM())
 	ens.add(TextRF())
 	ens.fit(d.X_train, d.y_train)
-	ens.score_sep(d.X_test, d.y_test)
+	ens.score_sep(d.X_test, d.y_test, verbose=False)
 	acc = ens.score(d.X_test, d.y_test, method=args.vote_method)
 	if args.verbose:
-		print 'Results:'
+		print '\nResults:'
 		print ens.accs
 		print 'Ensemble accuracy is %0.4f' %acc
 	
