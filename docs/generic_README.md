@@ -1,6 +1,6 @@
 #Generic classes and functions for performing document classification
 
-This script is basicaly the module's bargain bin--there's not really a theme to what's in it, other than that it probably doesn't belong in any of the other scripts.
+This script is basicaly the module's bargain bin--there's not really a theme to what's in it, other than that it doesn't really belong in any of the other scripts.
 
 ##Classes
 The only class here is the ```TextData``` class, which is a (sort-of) flexible holder for...text data. It comes with the ```.process()``` method for processing a Pandas ```DataFrame``` holding your corpus and target classes, as well as a ```.split()``` method for dividing the vectorized data into training and test sets. 
