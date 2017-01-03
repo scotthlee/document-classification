@@ -10,3 +10,5 @@ The other functions in the script, like ```accuracy()``` and ```linear_predictio
 
 ##Sample code
 ```>>> data = TextData()``` and ```>>> data.process(corpus, x_name, y_name)``` will vectorize the raw corpus and store the results as a Numpy array in the ```TextData``` object, which can be retrieved with calls to the ```.X``` and ```.y``` attributes. Once you divide the data into training and test sets using with something like ```>>> data.split()```, the sets can be retrieved with calls to the ```.X_group``` and ```.y_group``` attributes, respecitvely ("group" should be replaced with either "train" or "test").
+
+
