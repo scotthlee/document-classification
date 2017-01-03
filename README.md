@@ -1,5 +1,5 @@
 # document_classification
-This is a collection of Python scripts for doing sentiment analysis or, considered more broadly, document classification. Generally, each script will vectorize your text (i.e. by some form of bag-of-words) and then train a supervised model to predict which class each of the test documents belongs to. The scripts can be executed piece-by-piece from within Python or run from the command line by specifying a few positional arguments.
+This is a collection of Python modules for doing sentiment analysis or, considered more broadly, document classification. Generally, each script will vectorize your text (i.e. by some form of bag-of-words) and then train a supervised model to predict which class each of the test documents belongs to. The modules can be executed piece-by-piece from within Python or run as scripts from the command line by specifying a few positional arguments.
 
 ## what's included
   1. generic.py includes a holder class for text data objects and a few functions for working with linear models.
@@ -23,7 +23,7 @@ $ python nbsvm.py '~/data/docs.csv' 'text' 'sentiment' -lm 'no' -ng 3 -sm 'train
 The optional arguments specify that vectorizer should not limit the number features it considers; that the maximum n-gram size should be 3; and that the data should be split using sklearn's train_test() function. See the readme for [nbsvm.py](docs/nbsvm_README.md) for more details.
 
 ## system requirements
-To run these scripts, you'll need the Pandas, ScikitLearn, and Scipy/Numpy modules in addition to a working installation of Python (the code was written using 2.7.x). The code is also not optimized for speed, so model training may take a while, especially if the dimensionality is particularly high, e.g. with a large number of estimators in a random forest or with a big corpus, or if you perform cross-validation. 
+To use these modules, you'll need the Pandas, ScikitLearn, and Scipy/Numpy modules in addition to a working installation of Python (the code was written using 2.7.x). The code is also not optimized for speed, so model training may take a while, especially if the dimensionality is particularly high, e.g. with a large number of estimators in a random forest or with a big corpus, or if you perform cross-validation. 
 
 ## references
 D. Blei, A. Ng, M. Jordan. 2003. Latent dirichlet allocation. *Journal of Machine Learning Research*, 3 (Jan), 993-1022. [PDF] (http://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf) 
