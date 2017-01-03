@@ -49,11 +49,6 @@ def tune_C(x_tr, y_tr, x_te, y_te, c_params, beta=0.25, interpolate=False):
 class TextMNB:
 	def __init__(self):
 		self.__name__ = 'mnb'
-		self.X, self.y = [], []
-		self.X_train, self.X_test = [], []
-		self.y_train, self.y_test = [], []
-		self.X_train_pos, self.X_train_neg = [], []
-		self.X_train_nb, self.X_test_nb = [], []
 		
 		#attributes for the model
 		self.r = 0.0
@@ -62,48 +57,35 @@ class TextMNB:
 			
 	def fit(self, X, y, verbose=True):
 		#setting data attributes for the model instance
-		self.X_train, self.y_train = X, y
+		X = tfidf_to_counts(X)
 		
 		#splitting by target class so we can calculate the log-count ratio
-		self.X_train_pos = self.X_train[np.where(self.y_train == 1)]
-		self.X_train_neg = self.X_train[np.where(self.y_train == 0)]
-		
-		self.r = log_count_ratio(self.X_train_pos, self.X_train_neg)
-		self.X_train_nb = np.multiply(self.r, self.X_train)
+		X_pos = X[np.where(y == 1)]
+		X_neg = X[np.where(y == 0)]
+		self.r = log_count_ratio(X_pos, X_neg)
 		
 		#setting the npos and nneg variables
-		n_pos = self.X_train_pos.shape[0]
-		n_neg = self.X_train_neg.shape[0]
+		n_pos = X_pos.shape[0]
+		n_neg = X_neg.shape[0]
 		
 		#getting the bais for the MNB model
 		self.nb_bias = np.log(np.true_divide(n_pos, n_neg))
 		
-		#training the SVM with NB features but no interpolation			
-		
 	#trains, tests, and assesses the performance of the model
-	def score(self, X, y, verbose=False):
-		#setting data attributes for the model instance
-		self.X_test, self.y_test = X, y
-				
-		#scoring the model
-		acc = accuracy(self.X_test, self.y_test, self.r, self.nb_bias)
-		
-		#finding the best interpolation parameter given the data
+	def score(self, X, y):
+		X = tfidf_to_counts(X)
+		acc = accuracy(X, y, self.r, self.nb_bias)
 		return acc
 		
-	def predict(self, verbose=True):		
-		return linear_prediction(self.X_test, self.r, self.nb_bias).reshape(self.y_test.shape)
+	def predict(self, X):
+		X = tfidf_to_counts(X)		
+		return np.squeeze(linear_prediction(X, self.r, self.nb_bias))
 
 #main class for the NB-SVM
 class TextNBSVM:
 	def __init__(self):
 		#setting attributes for the data
 		self.__name__ = 'nbsvm'
-		self.X, self.y = [], []
-		self.X_train, self.X_test = [], []
-		self.y_train, self.y_test = [], []
-		self.X_train_pos, self.X_train_neg = [], []
-		self.X_train_nb, self.X_test_nb = [], []
 		
 		#setting attributes for the NBSVM
 		self.coef_ = []
@@ -117,18 +99,16 @@ class TextNBSVM:
 	def fit(self, X, y, verbose=True):
 		#setting data attributes for the model instance
 		X = tfidf_to_counts(X)
-		self.X_train, self.y_train = X, y
 		
 		#splitting by target class so we can calculate the log-count ratio
-		self.X_train_pos = self.X_train[np.where(self.y_train == 1)]
-		self.X_train_neg = self.X_train[np.where(self.y_train == 0)]
-		
-		self.r = log_count_ratio(self.X_train_pos, self.X_train_neg)
-		self.X_train_nb = np.multiply(self.r, self.X_train)
+		X_pos = X[np.where(y == 1)]
+		X_neg = X[np.where(y == 0)]
+		self.r = log_count_ratio(X_pos, X_neg)
+		X = np.multiply(self.r, X)
 		
 		#setting the npos and nneg variables
-		n_pos = self.X_train_pos.shape[0]
-		n_neg = self.X_train_neg.shape[0]
+		n_pos = X_pos.shape[0]
+		n_neg = X_neg.shape[0]
 		
 		#getting the bais for the MNB model
 		self.nb_bias = np.log(np.true_divide(n_pos, n_neg))
@@ -138,7 +118,7 @@ class TextNBSVM:
 			print "Training the NB-SVM..."
 		
 		nbsvm = LinearSVC()
-		nbsvm.fit(self.X_train_nb, self.y_train)
+		nbsvm.fit(X, y)
 		self.coef_ = nbsvm.coef_
 		self.int_coef_ = interpolate(self.coef_, self.beta)
 		self.bias = nbsvm.intercept_
@@ -147,11 +127,10 @@ class TextNBSVM:
 	def score(self, X, y):
 		#setting data attributes for the model instance
 		X = tfidf_to_counts(X)
-		self.X_test, self.y_test = X, y
-		self.X_test_nb = np.multiply(self.r, self.X_test)
+		X = np.multiply(self.r, X)
 
 		#finding the best interpolation parameter given the data
-		int_accs = tune_beta(self.X_test_nb, self.y_test, self.coef_, self.bias, np.arange(0, 1.025, .025))
+		int_accs = tune_beta(X, y, self.coef_, self.bias, np.arange(0, 1.025, .025))
 		inter_acc = int_accs[np.argsort(int_accs[:,1])[-1], 1]
 		best_beta = int_accs[np.argsort(int_accs[:,1])[-1], 0]
 		self.int_coef_ = interpolate(self.coef_, best_beta)
@@ -160,16 +139,16 @@ class TextNBSVM:
 		return inter_acc
 	
 	#returns binary class predictions	
-	def predict(self, X, verbose=True):
+	def predict(self, X):
 		X = tfidf_to_counts(X)
 		X = np.multiply(self.r, X)		
-		return linear_prediction(X, interpolate(self.coef_, self.beta), self.bias).reshape(X.shape[0])
+		return np.squeeze(linear_prediction(X, interpolate(self.coef_, self.beta), self.bias))
 		
 	#returns predicted probabilities using Platt scaling
 	def predict_proba(self, X, y):
 		X = tfidf_to_counts(X)
 		return platt_scale(X, y, self)
-		
+
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	
@@ -202,12 +181,12 @@ if __name__ == '__main__':
 	#running the models
 	mod = TextNBSVM()
 	mod.fit(d.X_train, d.y_train, verbose=args.verbose)
-	svm_acc = mod.score(d.X_test, d.y_test, verbose=args.verbose)
+	svm_acc = mod.score(d.X_test, d.y_test)
 	print "\nResults:"
 	print "NBSVM accuracy is %0.4f" %svm_acc
 	
 	mnb = TextMNB()
 	mnb.fit(d.X_train, d.y_train, verbose=args.verbose)
-	mnb_acc = mnb.score(d.X_test, d.y_test, verbose=args.verbose)
+	mnb_acc = mnb.score(d.X_test, d.y_test)
 	print "MNB accuracy is %0.4f" %mnb_acc	
 

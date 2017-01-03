@@ -7,6 +7,7 @@ import inspect
 import autograd
 import scipy
 
+from copy import deepcopy
 from scipy.optimize import minimize
 from autograd import jacobian
 from sklearn.svm import SVC, LinearSVC
@@ -68,9 +69,9 @@ class TextData:
 		
 	#splits the data into training and test sets; either called from self.process()
 	#or on its own when your text is already vectorized and divided into x and y
-	def split(self, split_method='train-test', split_var=None, test_val=None):
-		if split_method == 'train-test':
-			self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y)
+	def split(self, split_method='train-test', split_var=None, test_val=None, seed=None):
+		if split_method == 'train-test':				
+			self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, random_state=seed)
 		elif split_method == 'var':
 			self.X_train, self.X_test, self.y_train, self.y_test = split_by_var(self.X, self.y, self.data, 
 												split_var, test_val)
@@ -117,20 +118,9 @@ def accuracy(x, y, w, b):
     guess = linear_prediction(x, w, b)
     return np.true_divide(np.sum(guess.reshape(y.shape) == y), x.shape[0])
 
-#janky function for exping the weights in a linear model and getting a "roc" curve from the scores
-def roc(x, y, w, b, exp=False, cutoff=.5, by=.01):
-    exp_guesses = prediction(x, w, b, exp=True)
-    th = np.arange(min(exp_guesses) + by, 1, by)
-    n = len(th)
-    out = pd.DataFrame(np.zeros([n, 11]), columns=diag_names)    
-    i = 0
-    for cutoff in th:
-        out.iloc[i,:] = np.array(diagnostics(x, y, w, b, exp, cutoff))
-        i += 1
-    return out
-
 #converts tf-idf matrices to binary count matrices
 def tfidf_to_counts(data):
+	data = deepcopy(data)
 	data[np.where(data > 0)] = 1
 	return data
 
@@ -138,7 +128,7 @@ def tfidf_to_counts(data):
 #simple function for getting t from y (for Platt scaling)
 def y_to_t(y):
 	#quick type change, just in case
-	y = np.array(y)
+	y = deepcopy(np.array(y))
 	
 	#calculating t, which will replace 1/0 in y
 	n_pos = np.sum(y == 1)
@@ -149,7 +139,6 @@ def y_to_t(y):
 	#replacing values in y with the appropriate t
 	y[np.where(y == 1)] = t_pos
 	y[np.where(y == 0)] = t_neg
-	
 	return y
 
 #calculates cross-entropy using the sigmoid (for Platt scaling)
@@ -185,8 +174,10 @@ def platt_scale(X, y, mod, max_iter=1000, step=.001):
 	for i in range(max_iter):
 		vals -= gradient(vals, preds, y)*step
 	
-	#returning the probabilities
+	#returning the 
 	A = vals[0]
 	B = vals[1]
 	probs = platt_probs(A, B, preds)
 	return probs
+
+
