@@ -9,6 +9,6 @@ The only class here is the ```TextData``` class, which is a (sort-of) flexible h
 The other functions in the script, like ```accuracy()``` and ```linear_prediction``` mostly get called by other scripts during model training and evaluation. They can be useful for building your own classifiers, though, especially if they're somehow linear.
 
 ##Sample code
-```>>> data = TextData()``` and ```>>> data.process(corpus, x_name, y_name)``` will vectorize the raw corpus and store the results as a Numpy array in the ```TextData``` object, which can be retrieved with calls to the ```.X``` and ```.y``` attributes. Once you divide the data into training and test sets using with something like ```>>> data.split()```, the sets can be retrieved with calls to the ```.X_group``` and ```.y_group``` attributes, respecitvely ("group" should be replaced with either "train" or "test").
+```>>> data = TextData()``` and ```>>> data.process(corpus, x_name, y_name)``` will vectorize the raw corpus and store the results as a Numpy array in the ```TextData``` object, which can be retrieved with calls to the ```.X``` and ```.y``` attributes. Once you divide the data into training and test sets using with ```.split()```, the sets can be retrieved with calls to the ```.X_group``` and ```.y_group``` attributes, respecitvely ("group" should be replaced with either "train" or "test").
 
 
