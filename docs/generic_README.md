@@ -3,7 +3,7 @@
 This script is basicaly the module's bargain bin--there's not really a theme to what's in it, other than that it probably doesn't belong in any of the other scripts.
 
 ##Classes
-The only class here is the ```TextData`` class, which is a (sort-of) flexible holder for...text data. It comes with the ```.process()``` method for processing a Pandas ``DataFrame``` holding your corpus and target classes, as well as a ```.split()``` method for dividing the vectorized data into training and test sets. 
+The only class here is the ```TextData``` class, which is a (sort-of) flexible holder for...text data. It comes with the ```.process()``` method for processing a Pandas ``DataFrame``` holding your corpus and target classes, as well as a ```.split()``` method for dividing the vectorized data into training and test sets. 
 
 ##Functions
 The other functions in the script, like ```accuracy()``` and ```linear_prediction``` mostly get called by other scripts during model training and evaluation. They can be useful for building your own classifiers, though, especially if they're somehow linear.
