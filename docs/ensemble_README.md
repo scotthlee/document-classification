@@ -1,6 +1,9 @@
 # Ensemble methods
 
-This script contains the ```Ensemble``` class, a flexible holder that helps you do ensemble averaging for document classification. It trains the models separately--not jointly--and then combines their predicted probabilities for the test data using one of a few simple methods (the default is the geometric mean). You can add models to an ```Ensemble()``` instance with ```.add()```, and you can remove them with ```.remove()```. When you're ready to proceed, you can train and test the models with single calls to the ```.fit()``` and ```.score()``` methods, respectively. Other methods are ```.score_sep()```, which will return the accuracies of the models individually; and ```.predict_proba```, which will return a Pandas ```DataFrame``` with the predicted probabilities for the test data for each model. 
+This script contains the ```Ensemble``` class, a flexible holder that lets you use model averaging to perform document classification. It trains the models separately--not jointly--and then combines their predicted probabilities for the test data using one of a few simple methods (the default is the geometric mean). 
+
+##Classes
+Model averaging is done by way of the ```Ensemble``` class, which will hold the classifiers in the ensemble, fit them separately to the (same) training data, and then score them both separately and as a group on the test data. You can add models to an ```Ensemble()``` instance with ```.add()```, and you can remove them with ```.remove()```. When you're ready to proceed, you can train and test the models with single calls to the ```.fit()``` and ```.score()``` methods, respectively. Other methods are ```.score_sep()```, which will return the accuracies of the models individually; and ```.predict_proba```, which will return a Pandas ```DataFrame``` with the predicted probabilities for the test data for each model. 
 
 Other methods for combining model votes will be added soon.
 
