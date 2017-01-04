@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 import sklearn
-import generic
+import ml_tools
 import nbsvm
 import rf
 
