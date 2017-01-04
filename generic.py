@@ -31,19 +31,19 @@ def split_by_var(x, y, full_set, split_var, test_val):
 class TextData:
 	def __init__(self):
 	#setting attributes for the data
-		self.data = pd.DataFrame()
-		self.X, self.y = [], []
-		self.X_train, self.X_test = [], []
-		self.y_train, self.y_test = [], []
+		data = pd.DataFrame()
+		X, y = [], []
+		X_train, X_test = [], []
+		y_train, y_test = [], []
 
-	#wrappers for saving data frame to the RF object for when self.process() isn't used
+	#wrappers for saving data frame to the RF object for when process() isn't used
 	def set_data(self, df):
-		self.data = df
+		data = df
 		return
 	
 	def set_xy(self, x, y):
-		self.X = x
-		self.y = y
+		X = x
+		y = y
 		return
 	
 	#another wrapper for the vectorization functions; optional, and will take a while
@@ -62,18 +62,18 @@ class TextData:
 		full_counts = full_fit.toarray()
 		
 		#passing the attributes up to the class instance
-		self.data = df
-		self.X = full_counts
-		self.y = np.array(df[y_name])
+		data = df
+		X = full_counts
+		y = np.array(df[y_name])
 		return	
 		
-	#splits the data into training and test sets; either called from self.process()
+	#splits the data into training and test sets; either called from process()
 	#or on its own when your text is already vectorized and divided into x and y
 	def split(self, split_method='train-test', split_var=None, test_val=None, seed=None):
 		if split_method == 'train-test':				
-			self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, random_state=seed)
+			X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=seed)
 		elif split_method == 'var':
-			self.X_train, self.X_test, self.y_train, self.y_test = split_by_var(self.X, self.y, self.data, 
+			X_train, X_test, y_train, y_test = split_by_var(X, y, data, 
 												split_var, test_val)
 		return 
 
@@ -83,7 +83,7 @@ def get_args(foo):
 
 """General ML functions"""        
 #gets the diagnostic accuracy of a linear classifier; kinda pointless for an SVM, but still interesting
-def diagnostics(x, y, w, b, exp=False, cutoff=.5):
+def linear_diagnostics(x, y, w, b, exp=False, cutoff=.5):
     out = pd.DataFrame(np.zeros([1, 11]), columns=diag_names)
     true_targets = y
     if exp:
@@ -101,6 +101,30 @@ def diagnostics(x, y, w, b, exp=False, cutoff=.5):
     out.iloc[0,:] = [cutoff, tp, fp, tn, fn, se, sp, ppv, npv, acc, f]
     return out
 
+#functions for accuracy statistics
+def sens(guesses, targets):
+	tp = np.sum(np.logical_and(guesses==1, targets==1))
+	fn = np.sum(np.logical_and(guesses==0, targets==1))
+	return np.true_divide(tp, tp + fn)
+
+def spec(guesses, targets):
+	tn = np.sum(np.logical_and(guesses==0, targets==0))
+	fp = np.sum(np.logical_and(guesses==1, targets==0))
+	return np.true_divide(tn, tn + fp)
+
+def ppv(guesses, targets):
+	tp = np.sum(np.logical_and(guesses==1, targets==1))
+	fp = np.sum(np.logical_and(guesses==1, targets==0))
+	return np.true_divide(tp, tp + fp)
+	
+def f1(guesses, targets):
+	recall = sens(guesses, targets)
+	precision = ppv(guesses, targets)
+	return np.true_divide(2 * (precision * recall), precision + recall)
+
+def acc(guesses, targets):
+	return np.true_divide(np.sum(guesses == targets), len(guesses))
+		
 #returns the predicted outputs based on inputs, training weights, and training bias
 #exp=True will exponentiate the predicted values, transforming to [0, 1]
 def linear_prediction(x, w, b, neg=0, binary=True):
