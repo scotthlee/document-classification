@@ -3,8 +3,9 @@ import pandas as pd
 import numpy as np
 import sklearn
 import argparse
-import generic
+import ml_tools
 
+from copy import deepcopy
 from ml_tools import *
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -45,22 +46,13 @@ class TextRF:
 		self.mod = []
 		self.pruned = False
 		
-		#setting attributes for the data
-		self.X, self.y = [], []
-		self.X_train, self.X_test = [], []
-		self.y_train, self.y_test = [], []
-		
 	#main function for training and testing the random forest
 	def fit(self, X, y, top=100, jobs=-1, verbose=True, prune=True):
-		
-		#passing the training data up to the instance
-		self.X_train, self.y_train = X, y
-		
 		#training the RF on the docs
 		if verbose:
 			print "Training the random forest..."
 		rf = RandomForestClassifier(n_estimators=self.trees, class_weight='balanced_subsample', n_jobs=jobs)
-		mod = rf.fit(self.X_train, self.y_train)
+		mod = rf.fit(X, y)
 		importances = mod.feature_importances_
 			
 		if prune:
@@ -70,11 +62,11 @@ class TextRF:
 			self.feature_indices = trimmed_indices
 			
 			#pruning the unnecessary features from the training data
-			self.X_train = X[:, trimmed_indices]
+			X = deepcopy(X[:, trimmed_indices])
 			
 			#training a new forest on the pruned data
 			mod = RandomForestClassifier(n_estimators=self.trees, class_weight='balanced_subsample', n_jobs=jobs)
-			mod.fit(self.X_train, self.y_train)
+			mod.fit(X, y)
 			
 			#passing attributes up to the instance			
 			self.feature_importances = importances
@@ -86,19 +78,18 @@ class TextRF:
 	#wrappers for the sklearn functions; admittedly redundant	
 	def score(self, X, y):
 		if self.pruned:
-			self.X_test = X[:, self.feature_indices]
-		else:
-			self.X_test = X
-		self.y_test = y
-		return self.mod.score(self.X_test, y)
+			X = deepcopy(X[:, self.feature_indices])
+		return self.mod.score(X, y)
 	
 	def predict(self, X):
-		self.X_test = X[:, self.feature_indices]
-		return self.mod.predict(self.X_test)
+		if self.pruned:
+			X = deepcopy(X[:, self.feature_indices])
+		return self.mod.predict(X)
  	
 	def predict_proba(self, X):
-		self.X_test = X[:, self.feature_indices]
-		return self.mod.predict_proba(self.X_test)		
+		if self.pruned:
+			X = X[:, self.feature_indices]
+		return self.mod.predict_proba(X)		
 			
 #running an example of the model
 if __name__ == '__main__':
