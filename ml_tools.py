@@ -101,6 +101,20 @@ def linear_diagnostics(x, y, w, b, exp=False, cutoff=.5):
     out.iloc[0,:] = [cutoff, tp, fp, tn, fn, se, sp, ppv, npv, acc, f]
     return out
 
+#produces all the accuracy statistics
+def diagnostics(guesses, targets):
+	out = pd.DataFrame(np.zeros([1, 5]), columns=['se', 'sp', 'ppv', 'f1', 'acc'])
+	out['se'] = sens(guesses, targets)
+	out['sp'] = spec(guesses, targets)
+	out['ppv'] = ppv(guesses, targets)
+	out['f1'] = f1(guesses, targets)
+	out['acc'] = acc(guesses, targets)
+	return out
+
+def model_diagnostics(mod, X, y):
+	g = mod.predict(X)
+	return diagnostics(g, y)
+
 #functions for accuracy statistics
 def sens(guesses, targets):
 	tp = np.sum(np.logical_and(guesses==1, targets==1))
