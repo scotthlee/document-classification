@@ -55,9 +55,9 @@ class TextMNB:
 		self.bias = 0.0
 		self.nb_bias = 0.0
 			
-	def fit(self, X, y, verbose=True):
+	def fit(self, x, y, verbose=True):
 		#setting data attributes for the model instance
-		X = tfidf_to_counts(X)
+		X = tfidf_to_counts(x)
 		
 		#splitting by target class so we can calculate the log-count ratio
 		X_pos = X[np.where(y == 1)]
@@ -72,13 +72,13 @@ class TextMNB:
 		self.nb_bias = np.log(np.true_divide(n_pos, n_neg))
 		
 	#trains, tests, and assesses the performance of the model
-	def score(self, X, y):
-		X = tfidf_to_counts(X)
+	def score(self, x, y):
+		X = tfidf_to_counts(x)
 		acc = accuracy(X, y, self.r, self.nb_bias)
 		return acc
 		
-	def predict(self, X):
-		X = tfidf_to_counts(X)		
+	def predict(self, x):
+		X = tfidf_to_counts(x)		
 		return np.squeeze(linear_prediction(X, self.r, self.nb_bias))
 
 #main class for the NB-SVM
@@ -96,9 +96,9 @@ class TextNBSVM:
 		self.beta = 0.25
 		
 	#loads the data object and saves the train/test sets as instance attributes
-	def fit(self, X, y, verbose=True):
+	def fit(self, x, y, verbose=True):
 		#setting data attributes for the model instance
-		X = tfidf_to_counts(X)
+		X = tfidf_to_counts(x)
 		
 		#splitting by target class so we can calculate the log-count ratio
 		X_pos = X[np.where(y == 1)]
@@ -124,9 +124,9 @@ class TextNBSVM:
 		self.bias = nbsvm.intercept_
 
 	#trains, tests, and assesses the performance of the model
-	def score(self, X, y):
+	def score(self, x, y):
 		#setting data attributes for the model instance
-		X = tfidf_to_counts(X)
+		X = tfidf_to_counts(x)
 		X = np.multiply(self.r, X)
 
 		#finding the best interpolation parameter given the data
@@ -139,14 +139,14 @@ class TextNBSVM:
 		return inter_acc
 	
 	#returns binary class predictions	
-	def predict(self, X):
-		X = tfidf_to_counts(X)
+	def predict(self, x):
+		X = tfidf_to_counts(x)
 		X = np.multiply(self.r, X)		
 		return np.squeeze(linear_prediction(X, interpolate(self.coef_, self.beta), self.bias))
 		
 	#returns predicted probabilities using Platt scaling
-	def predict_proba(self, X, y):
-		X = tfidf_to_counts(X)
+	def predict_proba(self, x, y):
+		X = tfidf_to_counts(x)
 		return platt_scale(X, y, self)
 
 if __name__ == '__main__':
