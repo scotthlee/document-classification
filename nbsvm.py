@@ -3,7 +3,7 @@ import argparse
 import pandas as pd
 import numpy as np
 import sklearn
-from generic import *
+from ml_tools import *
 from sklearn.svm import SVC, LinearSVC
 
 #calculates the log-count ratio r

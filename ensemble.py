@@ -7,7 +7,7 @@ import nbsvm
 import rf
 
 from scipy.stats import gmean
-from generic import *
+from ml_tools import *
 from nbsvm import *
 from rf import *
 

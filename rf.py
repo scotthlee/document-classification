@@ -5,7 +5,7 @@ import sklearn
 import argparse
 import generic
 
-from generic import *
+from ml_tools import *
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier

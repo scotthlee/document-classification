@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
 import lda
-import generic
+import ml_tools
 import argparse
 
-from generic import *
+from ml_tools import *
 from sklearn.svm import LinearSVC, SVC
 from sklearn.decomposition import LatentDirichletAllocation as LDA
 
