@@ -42,8 +42,8 @@ class TextData:
 		return
 	
 	def set_xy(self, x, y):
-		self.X = x
-		self.y = y
+		self.X = deepcopy(x)
+		self.y = deepcopy(y)
 		return
 	
 	#another wrapper for the vectorization functions; optional, and will take a while
@@ -194,9 +194,9 @@ def platt_probs(A, B, preds):
 	return p
 
 #uses gradient descent to scale the 
-def platt_scale(X, y, mod, max_iter=1000, step=.001):
+def platt_scale(x, y, mod, max_iter=1000, step=.001):
 	#mnb-ifying the input
-	X = np.multiply(mod.r, X)
+	X = np.multiply(mod.r, x)
 	
 	#getting variables for the Platt scaling		
 	t = y_to_t(y)
