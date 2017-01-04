@@ -47,12 +47,12 @@ class TextRF:
 		self.pruned = False
 		
 	#main function for training and testing the random forest
-	def fit(self, X, y, top=100, jobs=-1, verbose=True, prune=True):
+	def fit(self, x, y, top=100, jobs=-1, verbose=True, prune=True):
 		#training the RF on the docs
 		if verbose:
 			print "Training the random forest..."
 		rf = RandomForestClassifier(n_estimators=self.trees, class_weight='balanced_subsample', n_jobs=jobs)
-		mod = rf.fit(X, y)
+		mod = rf.fit(x, y)
 		importances = mod.feature_importances_
 			
 		if prune:
@@ -62,7 +62,7 @@ class TextRF:
 			self.feature_indices = trimmed_indices
 			
 			#pruning the unnecessary features from the training data
-			X = deepcopy(X[:, trimmed_indices])
+			X = deepcopy(x[:, trimmed_indices])
 			
 			#training a new forest on the pruned data
 			mod = RandomForestClassifier(n_estimators=self.trees, class_weight='balanced_subsample', n_jobs=jobs)
@@ -76,19 +76,25 @@ class TextRF:
 		self.mod = mod
 		
 	#wrappers for the sklearn functions; admittedly redundant	
-	def score(self, X, y):
+	def score(self, x, y):
 		if self.pruned:
-			X = deepcopy(X[:, self.feature_indices])
+			X = deepcopy(x[:, self.feature_indices])
+		else:
+			X = deepcopy(x)
 		return self.mod.score(X, y)
 	
-	def predict(self, X):
+	def predict(self, x):
 		if self.pruned:
-			X = deepcopy(X[:, self.feature_indices])
+			X = deepcopy(x[:, self.feature_indices])
+		else:
+			X = deepcopy(x)
 		return self.mod.predict(X)
  	
 	def predict_proba(self, X):
 		if self.pruned:
-			X = X[:, self.feature_indices]
+			X = deepcopy(x[:, self.feature_indices])
+		else:
+			X = deepcopy(x)
 		return self.mod.predict_proba(X)		
 			
 #running an example of the model
