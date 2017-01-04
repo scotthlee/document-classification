@@ -31,19 +31,19 @@ def split_by_var(x, y, full_set, split_var, test_val):
 class TextData:
 	def __init__(self):
 	#setting attributes for the data
-		data = pd.DataFrame()
-		X, y = [], []
-		X_train, X_test = [], []
-		y_train, y_test = [], []
+		self.data = pd.DataFrame()
+		self.X, self.y = [], []
+		self.X_train, self.X_test = [], []
+		self.y_train, self.y_test = [], []
 
 	#wrappers for saving data frame to the RF object for when process() isn't used
 	def set_data(self, df):
-		data = df
+		self.data = df
 		return
 	
 	def set_xy(self, x, y):
-		X = x
-		y = y
+		self.X = x
+		self.y = y
 		return
 	
 	#another wrapper for the vectorization functions; optional, and will take a while
@@ -62,18 +62,18 @@ class TextData:
 		full_counts = full_fit.toarray()
 		
 		#passing the attributes up to the class instance
-		data = df
-		X = full_counts
-		y = np.array(df[y_name])
+		self.data = df
+		self.X = full_counts
+		self.y = np.array(df[y_name])
 		return	
 		
 	#splits the data into training and test sets; either called from process()
 	#or on its own when your text is already vectorized and divided into x and y
 	def split(self, split_method='train-test', split_var=None, test_val=None, seed=None):
 		if split_method == 'train-test':				
-			X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=seed)
+			self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, random_state=seed)
 		elif split_method == 'var':
-			X_train, X_test, y_train, y_test = split_by_var(X, y, data, 
+			self.X_train, self.X_test, self.y_train, self.y_test = split_by_var(self.X, self.y, data, 
 												split_var, test_val)
 		return 
 
