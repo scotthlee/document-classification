@@ -93,7 +93,7 @@ class TextNBSVM:
 		self.r = 0.0
 		self.bias = 0.0
 		self.nb_bias = 0.0
-		self.beta = 0.25
+		self.beta = None
 		
 	#loads the data object and saves the train/test sets as instance attributes
 	def fit(self, x, y, verbose=True):
@@ -134,15 +134,21 @@ class TextNBSVM:
 		inter_acc = int_accs[np.argsort(int_accs[:,1])[-1], 1]
 		best_beta = int_accs[np.argsort(int_accs[:,1])[-1], 0]
 		self.int_coef_ = interpolate(self.coef_, best_beta)
-		
 		self.beta = best_beta
 		return inter_acc
 	
 	#returns binary class predictions	
 	def predict(self, x):
 		X = tfidf_to_counts(x)
-		X = np.multiply(self.r, X)		
-		return np.squeeze(linear_prediction(X, interpolate(self.coef_, self.beta), self.bias))
+		X = np.multiply(self.r, X)
+		if self.beta == None:
+			#finding the best interpolation parameter given the data
+			int_accs = tune_beta(X, y, self.coef_, self.bias, np.arange(0, 1.025, .025))
+			inter_acc = int_accs[np.argsort(int_accs[:,1])[-1], 1]
+			best_beta = int_accs[np.argsort(int_accs[:,1])[-1], 0]
+			self.int_coef_ = interpolate(self.coef_, best_beta)
+			self.beta = best_beta		
+		return np.squeeze(linear_prediction(X, self.int_coef, self.bias))
 		
 	#returns predicted probabilities using Platt scaling
 	def predict_proba(self, x, y):
