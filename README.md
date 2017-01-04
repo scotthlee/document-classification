@@ -2,7 +2,7 @@
 This is a collection of Python modules for doing sentiment analysis or, considered more broadly, document classification. Generally, each script will vectorize your text (i.e. by some form of bag-of-words) and then train a supervised model to predict which class each of the test documents belongs to. The modules can be executed piece-by-piece from within Python or run as scripts from the command line by specifying a few positional arguments.
 
 ## what's included
-  1. generic.py includes a holder class for text data objects and a few functions for working with linear models.
+  1. ml_tools.py includes a holder class for text data objects and a few functions for working with linear models.
   2. nbsvm.py implements Wang and Manning's (2012) interpolated multinomial naive Bayes/support vector machine.
   3. rf.py performs the same task as the NB-SVM, only using a random forest as the classifier instead of an SVM.
   4. lsa.py performs LSA via SVD and either a KNN-classifier or a linear SVM. 
