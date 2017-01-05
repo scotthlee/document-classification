@@ -5,9 +5,9 @@ import scipy
 import numpy as np
 import pandas as pd
 import argparse
-import ml_tools
+import tools
 
-from ml_tools import *
+from tools import *
 from sklearn.decomposition import TruncatedSVD
 from sklearn.svm import LinearSVC
 from sklearn.pipeline import make_pipeline

@@ -2,12 +2,12 @@
 import pandas as pd
 import numpy as np
 import sklearn
-import ml_tools
+import tools
 import nbsvm
 import rf
 
 from scipy.stats import gmean
-from ml_tools import *
+from tools import *
 from nbsvm import *
 from rf import *
 
