@@ -138,7 +138,7 @@ def f1(guesses, targets):
 
 def acc(guesses, targets):
 	return np.true_divide(np.sum(guesses == targets), len(guesses))
-		
+
 #returns the predicted outputs based on inputs, training weights, and training bias
 #exp=True will exponentiate the predicted values, transforming to [0, 1]
 def linear_prediction(x, w, b, neg=0, binary=True):
