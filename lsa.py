@@ -39,7 +39,7 @@ def decompose(doc_vecs, n_features=100, normalize=False, flip=False):
 		return doc_mat
 
 class TextLSA:
-	def __init__(self, n_features=100, classifier='lsvm', kernel='rbf', n_neighbors=5):
+	def __init__(self, n_features=100, transform=True, classifier='lsvm', kernel='rbf', n_neighbors=5):
 		self.n_features = n_features
 		self.clf_type = classifier
 		if classifier == 'lsvm':
@@ -50,22 +50,30 @@ class TextLSA:
 			self.clf = KNeighborsClassifier(n_neighbors=n_neighbors, algorithm='brute', metric='cosine')
 	
 	def fit(self, x, y, normalize=False, flip=False):
-		X = decompose(deepcopy(x), self.n_features, normalize, flip)
+		X = deepcopy(x)
+		if self.transform:
+			X = decompose(X, self.n_features, normalize, flip)
 		self.clf.fit(X, y)
 	
 	def predict(self, x, normalize=False, flip=False):
-		X = decompose(deepcopy(x), self.n_features, normalize, flip)
+		X = deepcopy(x)
+		if self.transform:
+			X = decompose(X, self.n_features, normalize, flip)
 		return self.clf.predict(X)
 	
 	def predict_proba(self, x, y, normalize=False, flip=False):
-		X = decompose(deepcopy(x), self.n_features, normalize, flip)
+		X = deepcopy(x)
+		if self.transform:
+			X = decompose(X, self.n_features, normalize, flip)
 		if self.clf_type in ['svm', 'lsvm']:
 			return self.clf.predict_proba(X, y)
 		elif self.clf_type == 'knn':
 			return self.clf.predict_proba(X)
 	
 	def score(self, x, y, normalize=False, flip=False):
-		X = decompose(deepcopy(x), self.n_features, normalize, flip)
+		X = deepcopy(x)		
+		if self.transform:
+			X = decompose(X, self.n_features, normalize, flip)
 		return self.clf.score(X, y)
 
 if __name__ == '__main__':
