@@ -9,13 +9,14 @@ import tools
 
 from tools import *
 from sklearn.decomposition import TruncatedSVD
-from sklearn.svm import LinearSVC
+from copy import deepcopy
+from sklearn.svm import LinearSVC, SVC
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import Normalizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-from sklearn.neighbors import *
+from sklearn.neighbors import KNeighborsClassifier
 
 #simple wrapper for the truncated SVD; allows for matrix reshaping
 def decompose(doc_vecs, n_features=100, normalize=False, flip=False):
@@ -36,7 +37,37 @@ def decompose(doc_vecs, n_features=100, normalize=False, flip=False):
 		else:
 			doc_mat = svd.fit_transform(doc_vecs)
 		return doc_mat
-		
+
+class TextLSA:
+	def __init__(self, n_features=100, classifier='lsvm', kernel='rbf', n_neighbors=5):
+		self.n_features = n_features
+		self.clf_type = classifier
+		if classifier == 'lsvm':
+			self.clf = LinearSVC()
+		elif classifier == 'svm':
+			self.clf = SVC(kernel=kernel, probability=True)
+		elif classifier == 'knn':
+			self.clf = KNeighborsClassifier(n_neighbors=n_neighbors, algorithm='brute', metric='cosine')
+	
+	def fit(self, x, y, normalize=False, flip=False):
+		X = decompose(deepcopy(x), self.n_features, normalize, flip)
+		self.clf.fit(X, y)
+	
+	def predict(self, x, normalize=False, flip=False):
+		X = decompose(deepcopy(x), self.n_features, normalize, flip)
+		return self.clf.predict(X)
+	
+	def predict_proba(self, x, y, normalize=False, flip=False):
+		X = decompose(deepcopy(x), self.n_features, normalize, flip)
+		if self.clf_type in ['svm', 'lsvm']:
+			return self.clf.predict_proba(X, y)
+		elif self.clf_type == 'knn':
+			return self.clf.predict_proba(X)
+	
+	def score(self, x, y, normalize=False, flip=False):
+		X = decompose(deepcopy(x), self.n_features, normalize, flip)
+		return self.clf.score(X, y)
+
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('data', help='path for the data')
