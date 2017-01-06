@@ -190,7 +190,7 @@ def platt_scale(x, y, mod, max_iter=1000, step=.001):
 		preds = linear_prediction(X, mod.int_coef_, mod.bias, binary=False)
 	else:
 		X = deepcopy(x)
-		preds = linear_prediction(X, clf.coef_, clf.intercept_, binary=False)
+		preds = linear_prediction(X, mod.coef_, mod.intercept_, binary=False)
 	
 	#minimizing A and B via gradient descent
 	vals = np.array([A, B])
