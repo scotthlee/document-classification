@@ -176,16 +176,21 @@ def platt_probs(A, B, preds):
 
 #uses gradient descent to scale the 
 def platt_scale(x, y, mod, max_iter=1000, step=.001):
-	#mnb-ifying the input
-	X = np.multiply(mod.r, x)
-	
 	#getting variables for the Platt scaling		
 	t = y_to_t(y)
 	n_pos = np.sum(y == 1)
 	n_neg = np.sum(y == 0)		
 	A = 0.0
 	B = np.log(np.true_divide(n_neg + 1, n_pos + 1))		
-	preds = linear_prediction(X, mod.int_coef_, mod.bias, binary=False)
+	
+	#getting the predictions
+	if type(mod).__name__ not in ['SVC', 'LinearSVC']:
+		#mnb-ifying the input
+		X = np.multiply(mod.r, x)
+		preds = linear_prediction(X, mod.int_coef_, mod.bias, binary=False)
+	else:
+		X = deepcopy(x)
+		preds = mod.predict(X)
 	
 	#minimizing A and B via gradient descent
 	vals = np.array([A, B])
