@@ -184,13 +184,13 @@ def platt_scale(x, y, mod, max_iter=1000, step=.001):
 	B = np.log(np.true_divide(n_neg + 1, n_pos + 1))		
 	
 	#getting the predictions
-	if type(mod).__name__ not in ['SVC', 'LinearSVC']:
+	if type(mod).__name__ != 'LinearSVC':
 		#mnb-ifying the input
 		X = np.multiply(mod.r, x)
 		preds = linear_prediction(X, mod.int_coef_, mod.bias, binary=False)
 	else:
 		X = deepcopy(x)
-		preds = mod.predict(X)
+		preds = linear_prediction(X, clf.coef_, clf.intercept_, binary=False)
 	
 	#minimizing A and B via gradient descent
 	vals = np.array([A, B])
