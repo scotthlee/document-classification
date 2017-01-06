@@ -1,6 +1,6 @@
 """Functions for training and tuning supervised classification models"""
 import math
-import autograd.numpy as np
+import autograd.numpy as np4
 import sklearn
 import pandas as pd
 import inspect
@@ -82,25 +82,6 @@ def get_args(foo):
 	return inspect.getargspec(foo)
 
 """General ML functions"""        
-#gets the diagnostic accuracy of a linear classifier; kinda pointless for an SVM, but still interesting
-def linear_diagnostics(x, y, w, b, exp=False, cutoff=.5):
-    out = pd.DataFrame(np.zeros([1, 11]), columns=diag_names)
-    true_targets = y
-    if exp:
-        curr = prediction(x, w, b, exp=True)
-        curr[curr >= cutoff] = 1
-        curr[curr < cutoff] = 0
-    else:
-        curr = prediction(x, w, b)
-    curr = curr.reshape(true_targets.shape)
-    tab = pd.crosstab(curr, true_targets)
-    tp, fp, tn, fn = tab.iloc[1, 1], tab.iloc[1, 0], tab.iloc[0, 0], tab.iloc[0, 1]
-    se, sp, ppv, npv = np.true_divide([tp, tn, tp, tn], [tp+fn, tn+fp, tp+fp, tn+fn])
-    acc = np.true_divide(tp+tn, tp+tn+fp+fn)
-    f = 2 * np.true_divide(se * ppv, se + ppv)
-    out.iloc[0,:] = [cutoff, tp, fp, tn, fn, se, sp, ppv, npv, acc, f]
-    return out
-
 #produces all the accuracy statistics
 def diagnostics(guesses, targets):
 	out = pd.DataFrame(np.zeros([1, 5]), columns=['se', 'sp', 'ppv', 'f1', 'acc'])
