@@ -1,6 +1,6 @@
 """Functions for training and tuning supervised classification models"""
 import math
-import autograd.numpy as np4
+import autograd.numpy as np
 import sklearn
 import pandas as pd
 import inspect
