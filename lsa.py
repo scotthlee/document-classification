@@ -41,6 +41,7 @@ def decompose(doc_vecs, n_features=100, normalize=False, flip=False):
 class TextLSA:
 	def __init__(self, n_features=100, transform=True, classifier='lsvm', kernel='rbf', n_neighbors=5):
 		self.n_features = n_features
+		self.transform = transform
 		self.clf_type = classifier
 		if classifier == 'lsvm':
 			self.clf = LinearSVC()
@@ -65,8 +66,10 @@ class TextLSA:
 		X = deepcopy(x)
 		if self.transform:
 			X = decompose(X, self.n_features, normalize, flip)
-		if self.clf_type in ['svm', 'lsvm']:
-			return self.clf.predict_proba(X, y)
+		if self.clf_type == 'svm':
+			return self.clf.predict_proba(X)
+		elif self.clf_type in ['lsvm', 'nbsvm']:
+			return platt_scale(X, y, self.clf)
 		elif self.clf_type == 'knn':
 			return self.clf.predict_proba(X)
 	
