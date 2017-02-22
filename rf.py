@@ -90,7 +90,7 @@ class TextRF:
 			X = deepcopy(x)
 		return self.mod.predict(X)
  	
-	def predict_proba(self, X):
+	def predict_proba(self, x):
 		if self.pruned:
 			X = deepcopy(x[:, self.feature_indices])
 		else:
