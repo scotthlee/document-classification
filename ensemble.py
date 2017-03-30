@@ -53,13 +53,21 @@ class Ensemble:
 		return
 	
 	#scoring the ensemble on the test data
-	def score(self, X, y, method='geometric', threshold=0.5, erbose=True):
+	def score(self, X, y, method='geometric', threshold=0.5):
 		probs = self.predict_proba(X, y)
 		if method == 'geometric':
 			mean_probs = gmean(probs, axis=1)
 		guesses = [int(x >= threshold) for x in mean_probs]
 		acc = np.true_divide(np.sum(guesses == y), len(y))
 		return acc
+	
+	#predicting results with the test data
+	def predict(self, X, y, method='geometric', threshold=0.5):
+		probs = self.predict_proba(X, y)
+		if method == 'geometric':
+			mean_probs = gmean(probs, axis=1)
+		guesses = [int(x >= threshold) for x in mean_probs]
+		return guesses
 	
 	#gets the predicted probabilities of the test data
 	def predict_proba(self, X, y):
@@ -70,7 +78,7 @@ class Ensemble:
 				probs.iloc[:, i] = self.mods.values()[i].predict_proba(X)[:,1]
 			else:
 				probs.iloc[:, i] = self.mods['nbsvm'].predict_proba(X, y)
-		probs[probs == 0] = 0.0000001
+		#probs[probs == 0] = 0.0000001
 		return probs
 			
 if __name__ == '__main__':

@@ -18,7 +18,7 @@ from sklearn.model_selection import train_test_split, cross_val_score, KFold
 """Stuff for preparing the data"""
 #divides the data into training and testing samples using a column variable
 def split_by_var(x, y, full_set, split_var, test_val):
-	v = full_set[split_var].astype(str)	
+	v = full_set[split_var].astype(str)
 	train_indices = v[~v.isin([test_val])].index.tolist()
 	test_indices = v[v.isin([test_val])].index.tolist()
 	X_train = x[train_indices, :]
@@ -48,7 +48,7 @@ class TextData:
 	
 	#another wrapper for the vectorization functions; optional, and will take a while
 	def process(self, df, x_name, y_name, ngrams=2, max_features=35000, method='counts', binary=True, verbose=False):
-		if verbose:		
+		if verbose:
 			print "Vectorizing the corpus..."
 
 		#choosing the particular flavor of vectorizer
@@ -65,23 +65,23 @@ class TextData:
 		self.data = df
 		self.X = full_counts
 		self.y = np.array(df[y_name])
-		return	
+		return
 		
 	#splits the data into training and test sets; either called from process()
 	#or on its own when your text is already vectorized and divided into x and y
 	def split(self, split_method='train-test', split_var=None, test_val=None, seed=None):
-		if split_method == 'train-test':				
+		if split_method == 'train-test':
 			self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, random_state=seed)
 		elif split_method == 'var':
-			self.X_train, self.X_test, self.y_train, self.y_test = split_by_var(self.X, self.y, data, 
+			self.X_train, self.X_test, self.y_train, self.y_test = split_by_var(self.X, self.y, data,
 												split_var, test_val)
-		return 
+		return
 
 #wrapper for inspect.getargspec; helps navigate my less-than-ideal naming conventions
 def get_args(foo):
 	return inspect.getargspec(foo)
 
-"""General ML functions"""        
+"""General ML functions"""
 #produces all the accuracy statistics
 def diagnostics(guesses, targets):
 	out = pd.DataFrame(np.zeros([1, 5]), columns=['se', 'sp', 'ppv', 'f1', 'acc'])
@@ -92,8 +92,11 @@ def diagnostics(guesses, targets):
 	out['acc'] = acc(guesses, targets)
 	return out
 
-def model_diagnostics(mod, X, y):
-	g = mod.predict(X)
+def model_diagnostics(mod, X, y, type='single'):
+	if type == 'ensemble':
+		g = mod.predict(X, y)
+	else:
+		g = mod.predict(X)
 	return diagnostics(g, y)
 
 #functions for accuracy statistics
@@ -129,7 +132,7 @@ def linear_prediction(x, w, b, neg=0, binary=True):
         	if neg == 0:
             		prediction[prediction == -1] = 0
 	else:
-		prediction = guesses    
+		prediction = guesses
 	return prediction
 
 #returns the accuracy of a classifier based on inputs, outputs, training weights, and training bias
@@ -165,7 +168,7 @@ def platt_loss(vals, preds, y):
 	A = vals[0]
 	B = vals[1]
 	p = platt_probs(A, B, preds)
-	loss = -np.sum(y*np.log(p) + (1 - y)*np.log(1 - p))	
+	loss = -np.sum(y*np.log(p) + (1 - y)*np.log(1 - p))
 	return loss
 
 #calculates the sigmoid transformation of the linear predictions
@@ -174,14 +177,14 @@ def platt_probs(A, B, preds):
 	p = p.reshape(p.shape[0], )
 	return p
 
-#uses gradient descent to scale the 
+#uses gradient descent to scale the
 def platt_scale(x, y, mod, max_iter=1000, step=.001):
-	#getting variables for the Platt scaling		
+	#getting variables for the Platt scaling
 	t = y_to_t(y)
 	n_pos = np.sum(y == 1)
-	n_neg = np.sum(y == 0)		
+	n_neg = np.sum(y == 0)
 	A = 0.0
-	B = np.log(np.true_divide(n_neg + 1, n_pos + 1))		
+	B = np.log(np.true_divide(n_neg + 1, n_pos + 1))
 	
 	#getting the predictions
 	if type(mod).__name__ != 'LinearSVC':
@@ -198,10 +201,8 @@ def platt_scale(x, y, mod, max_iter=1000, step=.001):
 	for i in range(max_iter):
 		vals -= gradient(vals, preds, y)*step
 	
-	#returning the 
+	#returning the
 	A = vals[0]
 	B = vals[1]
 	probs = platt_probs(A, B, preds)
 	return probs
-
-
