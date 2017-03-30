@@ -5,6 +5,7 @@ import sklearn
 import tools
 import nbsvm
 import rf
+import re
 
 from scipy.stats import gmean
 from tools import *
@@ -22,8 +23,13 @@ class Ensemble:
 	
 	#adds a model to the ensemble
 	def add(self, model):
-		self.mods[model.__name__] = model
-		self.accs[model.__name__] = 0.0
+		if 'sklearn' in model.__module__:
+			modname = re.sub('sklearn', '', model.__module__)
+			self.mods[modname] = model
+			self.accs[modname] = 0.0
+		else:
+			self.mods[model.__name__] = model
+			self.accs[model.__name__] = 0.0
 		return
 	
 	#removes a model from the ensemble
@@ -95,7 +101,7 @@ if __name__ == '__main__':
 	else:
 		d.process(df, args.x_name, args.y_name, method=args.vectorizer, max_features=None, verbose=args.verbose)
 	
-	#getting the training and test sets	
+	#getting the training and test sets
 	d.split(args.split_method, args.split_variable, args.test_value)
 	
 	#adding the models
