@@ -67,10 +67,10 @@ class Ensemble:
 		if method == 'geometric':
 			mean_probs = gmean(probs, axis=1)
 		guesses = [int(x >= threshold) for x in mean_probs]
-		return guesses
+		return np.array(guesses)
 	
 	#gets the predicted probabilities of the test data
-	def predict_proba(self, X, y):
+	def predict_proba(self, X, y, mean=False):
 		probs = pd.DataFrame(np.zeros([X.shape[0], len(self.mods)]))
 		probs.columns = self.mods.keys()
 		for i in range(len(self.mods)):
@@ -79,7 +79,10 @@ class Ensemble:
 			else:
 				probs.iloc[:, i] = self.mods['nbsvm'].predict_proba(X, y)
 		#probs[probs == 0] = 0.0000001
-		return probs
+		if mean:
+			return gmean(probs, axis=1)
+		else:
+			return probs
 			
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
