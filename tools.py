@@ -9,7 +9,6 @@ import scipy
 
 from copy import deepcopy
 from scipy.optimize import minimize
-from scipy.sparse import csr_matrix
 from autograd import jacobian
 from sklearn.svm import SVC, LinearSVC
 from sklearn.utils import resample
@@ -44,7 +43,7 @@ class TextData:
 		return
 	
 	def set_xy(self, x, y):
-		self.X = csr_matrix(deepcopy(x))
+		self.X = deepcopy(x)
 		self.y = deepcopy(y)
 		return
 	
@@ -65,7 +64,7 @@ class TextData:
 		
 		#passing the attributes up to the class instance
 		self.data = df
-		self.X = csr_matrix(full_counts)
+		self.X = full_counts
 		self.y = np.array(df[y_name])
 		return
 		
