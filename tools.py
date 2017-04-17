@@ -69,12 +69,17 @@ class TextData:
 		
 	#splits the data into training and test sets; either called from process()
 	#or on its own when your text is already vectorized and divided into x and y
-	def split(self, split_method='train-test', split_var=None, test_val=None, seed=None):
-		if split_method == 'train-test':
+	def split(self, method='train-test', split_var=None, test_val=None, seed=None):
+		if method == 'train-test':
 			self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, random_state=seed)
-		elif split_method == 'var':
+		elif method == 'var':
 			self.X_train, self.X_test, self.y_train, self.y_test = split_by_var(self.X, self.y, data,
 												split_var, test_val)
+		elif method == 'bootstrap':
+			index_range = np.arange(0, len(self.y)))
+			indices = np.random.choice(index_range, len(self.y), replace=True)
+			X, y = self.X[indices, :], self.y[indices]
+			self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, random_state=seed)
 		return
 
 #wrapper for inspect.getargspec; helps navigate my less-than-ideal naming conventions
