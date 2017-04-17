@@ -9,8 +9,10 @@ import scipy
 
 from copy import deepcopy
 from scipy.optimize import minimize
+from scipy.sparse import csr_matrix
 from autograd import jacobian
 from sklearn.svm import SVC, LinearSVC
+from sklearn.utils import resample
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.model_selection import train_test_split, cross_val_score, KFold
@@ -42,7 +44,7 @@ class TextData:
 		return
 	
 	def set_xy(self, x, y):
-		self.X = deepcopy(x)
+		self.X = csr_matrix(deepcopy(x))
 		self.y = deepcopy(y)
 		return
 	
@@ -63,7 +65,7 @@ class TextData:
 		
 		#passing the attributes up to the class instance
 		self.data = df
-		self.X = full_counts
+		self.X = csr_matrix(full_counts)
 		self.y = np.array(df[y_name])
 		return
 		
@@ -76,7 +78,7 @@ class TextData:
 			self.X_train, self.X_test, self.y_train, self.y_test = split_by_var(self.X, self.y, data,
 												split_var, test_val)
 		elif method == 'bootstrap':
-			index_range = np.arange(0, len(self.y)))
+			index_range = np.arange(0, len(self.y))
 			indices = np.random.choice(index_range, len(self.y), replace=True)
 			X, y = self.X[indices, :], self.y[indices]
 			self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, random_state=seed)
