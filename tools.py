@@ -9,6 +9,7 @@ import scipy
 
 from copy import deepcopy
 from scipy.optimize import minimize
+from scipy.sparse import csr_matrix
 from autograd import jacobian
 from sklearn.svm import SVC, LinearSVC
 from sklearn.utils import resample
@@ -46,12 +47,13 @@ class TextData:
 		self.X = deepcopy(x)
 		self.y = deepcopy(y)
 		return
+		
+	def set_y(self, y):
+		self.y = deepcopy(y)
+		return
 	
 	#another wrapper for the vectorization functions; optional, and will take a while
-	def process(self, df, x_name, y_name, ngrams=2, max_features=35000, method='counts', binary=True, verbose=False):
-		if verbose:
-			print "Vectorizing the corpus..."
-
+	def process(self, df, x_name, y_name=None, ngrams=2, max_features=35000, method='counts', binary=True, sparse=False):
 		#choosing the particular flavor of vectorizer
 		if method == 'counts':
 			vectorizer = CountVectorizer(max_features=max_features, ngram_range=(1, ngrams), decode_error='replace', binary=binary)
@@ -64,8 +66,11 @@ class TextData:
 		
 		#passing the attributes up to the class instance
 		self.data = df
+		if sparse:
+			full_counts = csr_matrix(full_counts)
 		self.X = full_counts
-		self.y = np.array(df[y_name])
+		if y_name != None:
+			self.y = np.array(df[y_name])
 		return
 		
 	#splits the data into training and test sets; either called from process()
