@@ -30,21 +30,6 @@ def tune_beta(x, y, w, b, betas):
         results[i, 1] = accuracy(x, y, int_weights, b)
     return results
 
-#tries to find the best C parameter for the SVM; probably not very useful
-def tune_C(x_tr, y_tr, x_te, y_te, c_params, beta=0.25, interpolate=False):
-    out = pd.DataFrame(np.zeros([len(c_params), 11]), columns=diag_names)
-    i = 0
-    for c_param in c_params:
-        clf = LinearSVC(C=c_param).fit(x_tr, y_tr)
-        w, b = clf.coef_, clf.intercept_
-        if interpolate:
-            w = interpolate(clf.coef_, beta)
-            b = nb_bias
-        out.iloc[i,:] = np.array(diagnostics(x_te, y_te, w, b))
-        i += 1
-    out.iloc[:,0] = c_params
-    return out
-
 #class for the MNB classifier
 class TextMNB:
 	def __init__(self):
