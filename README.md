@@ -26,9 +26,9 @@ The optional arguments specify that vectorizer should not limit the number featu
 To use these modules, you'll need the Pandas, ScikitLearn, and Scipy/Numpy modules in addition to a working installation of Python (the code was written using 2.7.x). The code is also not optimized for speed, so model training may take a while, especially if the dimensionality is particularly high, e.g. with a large number of estimators in a random forest or with a big corpus, or if you perform cross-validation. 
 
 ## references
-D. Blei, A. Ng, M. Jordan. 2003. Latent dirichlet allocation. *Journal of Machine Learning Research*, 3 (Jan), 993-1022. [PDF] (http://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf) 
+D. Blei, A. Ng, M. Jordan. 2003. Latent dirichlet allocation. *Journal of Machine Learning Research*, 3 (Jan), 993-1022. [pdf](http://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf) 
 
-J. Platt. 1999. Probabilistic outputs for support vector machines and comparison to regularized likelihood methods. In *Advances in Large Margin Classifiers*. MIT Press. [PDF] (http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=ECEB33C240AB0DAD4A08834BBB95919D?doi=10.1.1.41.1639&rep=rep1&type=pdf)
+J. Platt. 1999. Probabilistic outputs for support vector machines and comparison to regularized likelihood methods. In *Advances in Large Margin Classifiers*. MIT Press. [pdf](http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=ECEB33C240AB0DAD4A08834BBB95919D?doi=10.1.1.41.1639&rep=rep1&type=pdf)
 
-S. Wang, C. Manning. 2012. Baselines and bigrams: Simple, good sentiment and topic classificiation. In *Proceedings of ACL 2012*. [PDF](http://nlp.stanford.edu/pubs/sidaw12_simple_sentiment.pdf)
+S. Wang, C. Manning. 2012. Baselines and bigrams: Simple, good sentiment and topic classificiation. In *Proceedings of ACL 2012*. [pdf]http://nlp.stanford.edu/pubs/sidaw12_simple_sentiment.pdf)
 
