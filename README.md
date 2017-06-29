@@ -30,5 +30,5 @@ D. Blei, A. Ng, M. Jordan. 2003. Latent dirichlet allocation. *Journal of Machin
 
 J. Platt. 1999. Probabilistic outputs for support vector machines and comparison to regularized likelihood methods. In *Advances in Large Margin Classifiers*. MIT Press. [pdf](http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=ECEB33C240AB0DAD4A08834BBB95919D?doi=10.1.1.41.1639&rep=rep1&type=pdf)
 
-S. Wang, C. Manning. 2012. Baselines and bigrams: Simple, good sentiment and topic classificiation. In *Proceedings of ACL 2012*. [pdf]http://nlp.stanford.edu/pubs/sidaw12_simple_sentiment.pdf)
+S. Wang, C. Manning. 2012. Baselines and bigrams: Simple, good sentiment and topic classificiation. In *Proceedings of ACL 2012*. [pdf](http://nlp.stanford.edu/pubs/sidaw12_simple_sentiment.pdf)
 
