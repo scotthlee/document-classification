@@ -42,16 +42,16 @@ class TextData:
 	def set_data(self, df):
 		self.data = df
 		return
-	
+
 	def set_xy(self, x, y):
 		self.X = deepcopy(x)
 		self.y = deepcopy(y)
 		return
-		
+
 	def set_y(self, y):
 		self.y = deepcopy(y)
 		return
-	
+
 	#another wrapper for the vectorization functions; optional, and will take a while
 	def process(self, df, x_name, y_name=None, ngrams=2, max_features=35000, method='counts', binary=True, sparse=False):
 		#choosing the particular flavor of vectorizer
@@ -59,11 +59,12 @@ class TextData:
 			vectorizer = CountVectorizer(max_features=max_features, ngram_range=(1, ngrams), decode_error='replace', binary=binary)
 		elif method == 'tfidf':
 			vectorizer = TfidfVectorizer(max_features=max_features, ngram_range=(1, ngrams), decode_error='replace')
-		
+
 		#fitting the vectorizer and converting the counts to an array
 		full_fit = vectorizer.fit_transform(df[x_name])
 		full_counts = full_fit.toarray()
-		
+		self.vocabulary_ = vectorizer.vocabulary_
+
 		#passing the attributes up to the class instance
 		self.data = df
 		if sparse:
@@ -72,7 +73,7 @@ class TextData:
 		if y_name != None:
 			self.y = np.array(df[y_name])
 		return
-		
+
 	#splits the data into training and test sets; either called from process()
 	#or on its own when your text is already vectorized and divided into x and y
 	def split(self, method='train-test', split_var=None, test_val=None, seed=None):
@@ -125,7 +126,7 @@ def ppv(guesses, targets):
 	tp = np.sum(np.logical_and(guesses==1, targets==1))
 	fp = np.sum(np.logical_and(guesses==1, targets==0))
 	return np.true_divide(tp, tp + fp)
-	
+
 def f1(guesses, targets):
 	recall = sens(guesses, targets)
 	precision = ppv(guesses, targets)
@@ -162,13 +163,13 @@ def tfidf_to_counts(data):
 def y_to_t(y):
 	#quick type change, just in case
 	y = deepcopy(np.array(y))
-	
+
 	#calculating t, which will replace 1/0 in y
 	n_pos = np.sum(y == 1)
 	n_neg = np.sum(y == 0)
 	t_pos = np.true_divide(n_pos + 1, n_pos + 2)
 	t_neg = np.true_divide(1, n_neg + 2)
-	
+
 	#replacing values in y with the appropriate t
 	y[np.where(y == 1)] = t_pos
 	y[np.where(y == 0)] = t_neg
@@ -196,7 +197,7 @@ def platt_scale(x, y, mod, max_iter=1000, step=.001):
 	n_neg = np.sum(y == 0)
 	A = 0.0
 	B = np.log(np.true_divide(n_neg + 1, n_pos + 1))
-	
+
 	#getting the predictions
 	if type(mod).__name__ != 'LinearSVC':
 		#mnb-ifying the input
@@ -205,13 +206,13 @@ def platt_scale(x, y, mod, max_iter=1000, step=.001):
 	else:
 		X = deepcopy(x)
 		preds = linear_prediction(X, mod.coef_, mod.intercept_, binary=False)
-	
+
 	#minimizing A and B via gradient descent
 	vals = np.array([A, B])
 	gradient = jacobian(platt_loss)
 	for i in range(max_iter):
 		vals -= gradient(vals, preds, y)*step
-	
+
 	#returning the
 	A = vals[0]
 	B = vals[1]
