@@ -107,6 +107,11 @@ class TextNBSVM:
 		self.coef_ = nbsvm.coef_
 		self.int_coef_ = interpolate(self.coef_, self.beta)
 		self.bias = nbsvm.intercept_
+	
+	# Returns the parameters of the estimator	
+	def get_params(self):
+        	return {'int_coef_':self.int_coef_, 'coef_':self.coef_, 'r':self.r, 'bias':self.bias, 'nb_bias':self.nb_bias, 'beta':self.beta}
+
 
 	#trains, tests, and assesses the performance of the model
 	def score(self, x, y):

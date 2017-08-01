@@ -41,9 +41,7 @@ class TextRF:
 		#setting attributes for the RF
 		self.__name__ = 'rf'
 		self.feature_names = []
-		self.feature_importances = []
 		self.trees = trees
-		self.mod = []
 		self.pruned = False
 		
 	#main function for training and testing the random forest
