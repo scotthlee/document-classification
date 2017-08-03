@@ -1,12 +1,13 @@
-"""Scott's script for training SVMs a la Wang and Manning (2012)"""
+'''Scott's script for training SVMs a la Wang and Manning (2012)'''
 import argparse
 import pandas as pd
 import numpy as np
-import sklearn
-from tools import *
-from sklearn.svm import SVC, LinearSVC
 
-#calculates the log-count ratio r
+from tools import *
+from sklearn.svm import LinearSVC
+from sklearn.model_selection import KFold
+
+# Calculates the log-count ratio r
 def log_count_ratio(pos_text, neg_text, alpha=1):
     p = np.add(alpha, np.sum(pos_text, axis=0))
     q = np.add(alpha, np.sum(neg_text, axis=0))
@@ -16,11 +17,11 @@ def log_count_ratio(pos_text, neg_text, alpha=1):
     r = np.log(np.true_divide(p_ratio, q_ratio))
     return r
     
-#returns interpolated weights for constructing the nb-svm
+# Returns interpolated weights for constructing the NB-SVM
 def interpolate(w, beta):
-	return ((1 - beta) * (np.sum(w) / w.shape[1])) + (beta * w)
+	return ((1 - beta) * (np.true_divide(np.linalg.norm(w, ord=1), w.shape[1]))) + (beta * w)
 
-#finds the interpolation paramater beta that yields the highest accuracy
+# Finds the interpolation paramater beta that yields the highest accuracy
 def tune_beta(x, y, w, b, betas):
     n = len(betas)
     results = np.zeros([n, 2])
@@ -29,6 +30,53 @@ def tune_beta(x, y, w, b, betas):
         int_weights = interpolate(w, betas[i])
         results[i, 1] = accuracy(x, y, int_weights, b)
     return results
+
+# Main class for the NB-SVM
+class NBSVM:
+	def __init__(self, C=0.1, beta=0.25):
+		self.__name__ = 'nbsvm'
+		self.coef_ = []
+		self.int_coef_ = []
+		self.r = 0.0
+		self.bias = 0.0
+		self.nb_bias = 0.0
+		self.beta = beta
+		self.C = C
+		
+	# Fits the model to the data and does the interpolation
+	def fit(self, x, y):
+		# Convert non-binary features to binary
+		bin_x = tfidf_to_counts(x)
+		
+		# Calculating the log-count ratio
+		X_pos = bin_x[np.where(y == 1)]
+		X_neg = bin_x[np.where(y == 0)]
+		self.r = log_count_ratio(X_pos, X_neg)
+		X = np.multiply(self.r, bin_x)
+		
+		# Training linear SVM with NB features but no interpolation
+		svm = LinearSVC(C=self.C)
+		svm.fit(X, y)
+		self.coef_ = svm.coef_
+		self.int_coef_ = interpolate(self.coef_, self.beta)
+		self.bias = svm.intercept_
+	
+	# Scores the interpolated model
+	def score(self, x, y):
+		bin_x = tfidf_to_counts(x)
+		X = np.multiply(self.r, bin_x)
+		return accuracy(X, y, self.int_coef_, self.bias)
+	
+	# Returns binary class predictions	
+	def predict(self, x):
+		bin_x = tfidf_to_counts(x)
+		X = np.multiply(self.r, bin_x)
+		return np.squeeze(linear_prediction(X, self.int_coef_, self.bias))
+		
+	# Returns predicted probabilities using Platt scaling
+	def predict_proba(self, x, y):
+		X = tfidf_to_counts(x)
+		return platt_scale(X, y, self)
 
 #class for the MNB classifier
 class TextMNB:
@@ -65,78 +113,6 @@ class TextMNB:
 	def predict(self, x):
 		X = tfidf_to_counts(x)		
 		return np.squeeze(linear_prediction(X, self.r, self.nb_bias))
-
-#main class for the NB-SVM
-class TextNBSVM:
-	def __init__(self):
-		#setting attributes for the data
-		self.__name__ = 'nbsvm'
-		
-		#setting attributes for the NBSVM
-		self.coef_ = []
-		self.int_coef_ = []
-		self.r = 0.0
-		self.bias = 0.0
-		self.nb_bias = 0.0
-		self.beta = 0.25
-		
-	#loads the data object and saves the train/test sets as instance attributes
-	def fit(self, x, y, verbose=True):
-		#setting data attributes for the model instance
-		X = tfidf_to_counts(x)
-		
-		#splitting by target class so we can calculate the log-count ratio
-		X_pos = X[np.where(y == 1)]
-		X_neg = X[np.where(y == 0)]
-		self.r = log_count_ratio(X_pos, X_neg)
-		X = np.multiply(self.r, X)
-		
-		#setting the npos and nneg variables
-		n_pos = X_pos.shape[0]
-		n_neg = X_neg.shape[0]
-		
-		#getting the bais for the MNB model
-		self.nb_bias = np.log(np.true_divide(n_pos, n_neg))
-		
-		#training the SVM with NB features but no interpolation
-		if verbose:		
-			print "Training the NB-SVM..."
-		
-		nbsvm = LinearSVC()
-		nbsvm.fit(X, y)
-		self.coef_ = nbsvm.coef_
-		self.int_coef_ = interpolate(self.coef_, self.beta)
-		self.bias = nbsvm.intercept_
-	
-	# Returns the parameters of the estimator	
-	def get_params(self):
-        	return {'int_coef_':self.int_coef_, 'coef_':self.coef_, 'r':self.r, 'bias':self.bias, 'nb_bias':self.nb_bias, 'beta':self.beta}
-
-
-	#trains, tests, and assesses the performance of the model
-	def score(self, x, y):
-		#setting data attributes for the model instance
-		X = tfidf_to_counts(x)
-		X = np.multiply(self.r, X)
-
-		#finding the best interpolation parameter given the data
-		int_accs = tune_beta(X, y, self.coef_, self.bias, np.arange(0, 1.025, .025))
-		inter_acc = int_accs[np.argsort(int_accs[:,1])[-1], 1]
-		best_beta = int_accs[np.argsort(int_accs[:,1])[-1], 0]
-		self.int_coef_ = interpolate(self.coef_, best_beta)
-		self.beta = best_beta
-		return inter_acc
-	
-	#returns binary class predictions	
-	def predict(self, x):
-		X = tfidf_to_counts(x)
-		X = np.multiply(self.r, X)
-		return np.squeeze(linear_prediction(X, self.int_coef_, self.bias))
-		
-	#returns predicted probabilities using Platt scaling
-	def predict_proba(self, x, y):
-		X = tfidf_to_counts(x)
-		return platt_scale(X, y, self)
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
