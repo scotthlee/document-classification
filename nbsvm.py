@@ -16,7 +16,7 @@ def log_count_ratio(pos_text, neg_text, alpha=1):
     q_ratio = np.true_divide(q, q_norm)
     r = np.log(np.true_divide(p_ratio, q_ratio))
     return r
-    
+
 # Returns interpolated weights for constructing the NB-SVM
 def interpolate(w, beta):
 	return ((1 - beta) * (np.true_divide(np.linalg.norm(w, ord=1), w.shape[1]))) + (beta * w)
