@@ -35,6 +35,11 @@ def tune_beta(x, y, w, b, betas):
 class NBSVM:
 	def __init__(self, C=0.1, beta=0.25):
 		self.__name__ = 'nbsvm'
+		self.coef_ = []
+		self.int_coef_ = []
+		self.r = 0.0
+		self.bias = 0.0
+		self.nb_bias = 0.0
 		self.beta = beta
 		self.C = C
 		
