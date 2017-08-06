@@ -19,7 +19,7 @@ def log_count_ratio(pos_text, neg_text, alpha=1):
 
 # Returns interpolated weights for constructing the NB-SVM
 def interpolate(w, beta):
-	return ((1 - beta) * (np.true_divide(np.sum(w), w.shape[1]))) + (beta * w)
+	return ((1 - beta) * (np.true_divide(np.linalg.norm(w, ord=1), w.shape[1]))) + (beta * w)
 
 # Finds the interpolation paramater beta that yields the highest accuracy
 def tune_beta(x, y, w, b, betas):
