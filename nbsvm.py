@@ -1,4 +1,4 @@
-'''Scott's script for training SVMs a la Wang and Manning (2012)'''
+'''Scott's script for training NB-SVMs a la Wang and Manning (2012)'''
 import argparse
 import pandas as pd
 import numpy as np
@@ -78,7 +78,7 @@ class NBSVM:
 		X = tfidf_to_counts(x)
 		return platt_scale(X, y, self)
 
-#class for the MNB classifier
+# Class for the MNB classifier
 class TextMNB:
 	def __init__(self):
 		self.__name__ = 'mnb'
