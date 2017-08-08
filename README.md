@@ -23,9 +23,9 @@ The optional arguments specify that vectorizer should not limit the number featu
 To use these modules, you'll need the Pandas, ScikitLearn, and Scipy/Numpy modules in addition to a working installation of Python (the code was written using 2.7.x). The code is also not optimized for speed, so model training may take a while, especially if the dimensionality is particularly high, e.g. with a large number of estimators in a random forest or with a big corpus, or if you perform cross-validation. 
 
 ## references
-D. Blei, A. Ng, M. Jordan. 2003. Latent dirichlet allocation. *Journal of Machine Learning Research*, 3 (Jan), 993-1022. [pdf](http://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf) 
+Blei D, Ng A, Jordan M. Latent dirichlet allocation. *Journal of Machine Learning Research*, 3 (Jan), 993-1022. 2003. [pdf](http://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf) 
 
-J. Platt. 1999. Probabilistic outputs for support vector machines and comparison to regularized likelihood methods. In *Advances in Large Margin Classifiers*. MIT Press. [pdf](http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=ECEB33C240AB0DAD4A08834BBB95919D?doi=10.1.1.41.1639&rep=rep1&type=pdf)
+Platt J. Probabilistic outputs for support vector machines and comparison to regularized likelihood methods. In *Advances in Large Margin Classifiers*. MIT Press. 1999. [pdf](http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=ECEB33C240AB0DAD4A08834BBB95919D?doi=10.1.1.41.1639&rep=rep1&type=pdf)
 
 Landauer TK. Latent semantic analysis. John Wiley & Sons, Ltd; 2006.
 
