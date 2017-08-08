@@ -11,15 +11,12 @@ This is a collection of Python modules for doing sentiment analysis or, consider
 
 ## using the scripts
 All of these scripts take CSV files as their input and convert them to Pandas DataFrames before model training; this is largely to facilitate data transfer between R and Python. As of now, the CSV files must be in a document-level format, i.e. with one row per document and a minimum of two columns, one holding the document text, and the other holding the outcome or target variable. The functions use sklearn's built in count vectorizers to vectorize the text data, which you can manipulate via the command-line arguments in the modeling scripts or through the class-specific methods for each model. 
-
-A friendly reminder: These models may work well with your data, but they also may not. Remember that many of the benchmark datasets for sentiment analysis are large, both in terms of vocabulary size and training data volume, so the ~90% accuracy that we see in state-of-the-art may be hard, if not impossible, for you to reach. Adjust your expectations accordingly, and have fun. ;)
   
 ## sample code
 This line will train an NB-SVM on the imaginary docs.csv using the values in the 'sentiment' column as the target and the text in the 'text' column as the input. 
 ```
 $ python nbsvm.py '~/data/docs.csv' 'text' 'sentiment' -lm 'no' -ng 3 -sm 'train-test'
 ```
-
 The optional arguments specify that vectorizer should not limit the number features it considers; that the maximum n-gram size should be 3; and that the data should be split using sklearn's train_test() function. See the readme for [nbsvm.py](docs/nbsvm_README.md) for more details.
 
 ## system requirements
