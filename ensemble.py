@@ -1,16 +1,12 @@
 '''A simple script for making ensemble classifiers with random forests and NBSVMs'''
 import pandas as pd
 import numpy as np
-import sklearn
-import tools
-import nbsvm
-import rf
 import re
 
 from scipy.stats import gmean
 from tools import *
-from nbsvm import *
-from rf import *
+from nbsvm import NBSVM
+from rf import TextRF
 
 #generalizing the RF-SVM class
 class Ensemble:
