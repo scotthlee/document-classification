@@ -1,14 +1,21 @@
-'''A simple script for making ensemble classifiers with random forests and NBSVMs'''
+'''
+A simple script for making ensemble classifiers with random forests and NBSVMs
+'''
 import pandas as pd
 import numpy as np
 import re
 
 from scipy.stats import gmean
-from tools import *
+
+import tools
 from nbsvm import NBSVM
 from rf import TextRF
 
-#generalizing the RF-SVM class
+'''
+Main class for the model Ensemble. Methods generally follow scikit-learn style,
+with the exceptions of add(), remove(), and score_sep(), which are specific
+to this module.
+'''
 class Ensemble:
 	def __init__(self):
 		self.mods = {}
@@ -28,19 +35,19 @@ class Ensemble:
 			self.accs[model.__name__] = 0.0
 		return
 	
-	#removes a model from the ensemble
+	# Removes a model from the ensemble
 	def remove(self, name):
 		del self.mods[name]
 		del self.accs[name]
 		return
 	
-	#fitting the models to the training data
+	# Fits the models to the training data
 	def fit(self, X, y):
 		for mod in self.mods:
 			self.mods.get(mod).fit(X, y)
 		return
 	
-	#scoring the models on the test data
+	# Scoresthe models on the test data
 	def score_sep(self, X, y, verbose=True):
 		for mod in self.mods:
 			self.accs[mod] = self.mods.get(mod).score(X, y)
@@ -48,7 +55,7 @@ class Ensemble:
 			print self.accs
 		return
 	
-	#scoring the ensemble on the test data
+	# Scores the ensemble on the test data
 	def score(self, X, y, method='geometric', threshold=0.5):
 		probs = self.predict_proba(X, y)
 		if method == 'geometric':
@@ -57,7 +64,7 @@ class Ensemble:
 		acc = np.true_divide(np.sum(guesses == y), len(y))
 		return acc
 	
-	#predicting results with the test data
+	# Predicts results with the test data
 	def predict(self, X, y, method='geometric', threshold=0.5):
 		probs = self.predict_proba(X, y)
 		if method == 'geometric':
@@ -65,7 +72,7 @@ class Ensemble:
 		guesses = [int(x >= threshold) for x in mean_probs]
 		return np.array(guesses)
 	
-	#gets the predicted probabilities of the test data
+	# Gets predicted probabilities for the test data
 	def predict_proba(self, X, y, mean=False):
 		probs = pd.DataFrame(np.zeros([X.shape[0], len(self.mods)]))
 		probs.columns = self.mods.keys()
@@ -74,7 +81,6 @@ class Ensemble:
 				probs.iloc[:, i] = self.mods.values()[i].predict_proba(X)[:,1]
 			else:
 				probs.iloc[:, i] = self.mods['nbsvm'].predict_proba(X, y)
-		#probs[probs == 0] = 0.0000001
 		if mean:
 			return gmean(probs, axis=1)
 		else:
@@ -102,7 +108,7 @@ if __name__ == '__main__':
 
 	#loading and processing the data
 	df = pd.read_csv(args.data)
-	d = TextData()
+	d = tools.TextData()
 	if args.limit_features:
 		d.process(df, args.x_name, args.y_name, method=args.vectorizer, max_features=args.features, verbose=args.verbose)
 	else:
@@ -122,4 +128,3 @@ if __name__ == '__main__':
 		print '\nResults:'
 		print ens.accs
 		print 'Ensemble accuracy is %0.4f' %acc
-	
