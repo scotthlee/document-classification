@@ -11,28 +11,41 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	
 	# Positional arguments
-	parser.add_argument('data', default='~/data/addm/corpus_with_lemmas.csv', help='path for the input data')
-	parser.add_argument('x_name', default='dx', help='name of the column holding the text')
-	parser.add_argument('y_name', default='aucaseyn', help='name of the column holding the target values')
+	parser.add_argument('data', default='~/data/addm/corpus_with_lemmas.csv', 
+                     help='path for the input data')
+	parser.add_argument('x_name', default='dx', 
+                     help='name of the column holding the text')
+	parser.add_argument('y_name', default='aucaseyn', 
+                     help='name of the column holding the target values')
 
 	# Optional arguments for tuning
-	parser.add_argument('-lm', '--limit_features', type=bool, default=True, help='limit the number of features for the SVM? (yes or no)')
-	parser.add_argument('-ft', '--features', type=int, default=35000, help='number of features for the SVM, if limited')
-	parser.add_argument('-ng', '--ngrams', type=int, default=2, help='max ngram size')
-	parser.add_argument('-tp', '--topics', type=int, default=10, help='number of topics for LDA')
-	parser.add_argument('-sm', '--split_method', default='train-test', help='split the data by var(iable), train-test, or cross-val')
-	parser.add_argument('-sv', '--split_variable', default='year', help='which variable to use for splitting')
-	parser.add_argument('-tv', '--test_value', default=2008, help='which value of --split_variable to use for testing')
-	parser.add_argument('-vb', '--verbose', default=True, help='should functions print updates as they go?')
+	parser.add_argument('-lm', '--limit_features', type=bool, default=True, 
+                     help='limit the number of features? (yes or no)')
+	parser.add_argument('-ft', '--features', type=int, default=35000, 
+                     help='number of features for the SVM, if limited')
+	parser.add_argument('-ng', '--ngrams', type=int, default=2, 
+                     help='max ngram size')
+	parser.add_argument('-tp', '--topics', type=int, default=10, 
+                     help='number of topics for LDA')
+	parser.add_argument('-sm', '--split_method', default='train-test', 
+                     help='split the data by var(iable), train-test, or cross-val')
+	parser.add_argument('-sv', '--split_variable', default='year', 
+                     help='which variable to use for splitting')
+	parser.add_argument('-tv', '--test_value', default=2008, 
+                     help='which value of --split_variable to use for testing')
+	parser.add_argument('-vb', '--verbose', default=True, 
+                     help='should functions print updates as they go?')
 	args = parser.parse_args()
 
 	# Loading and processing the data
 	df = pd.read_csv(args.data)
 	d = tools.TextData()
 	if args.limit_features:
-		d.process(df, args.x_name, args.y_name, max_features=args.features, verbose=args.verbose)
+		d.process(df, args.x_name, args.y_name, 
+            max_features=args.features, verbose=args.verbose)
 	else:
-		d.process(df, args.x_name, args.y_name, max_features=None, verbose=args.verbose)
+		d.process(df, args.x_name, args.y_name, 
+            max_features=None, verbose=args.verbose)
 	
 	# Fitting the LDA model
 	if args.verbose:
