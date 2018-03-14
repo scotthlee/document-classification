@@ -19,7 +19,8 @@ def log_count_ratio(pos_text, neg_text, alpha=1):
 
 # Returns interpolated weights for constructing the NB-SVM
 def interpolate(w, beta):
-	return ((1 - beta) * (np.true_divide(np.linalg.norm(w, ord=1), w.shape[1]))) + (beta * w)
+	return ((1 - beta) * (np.true_divide(np.linalg.norm(w, ord=1), 
+                                      w.shape[1]))) + (beta * w)
 
 # Finds the interpolation paramater beta that yields the highest accuracy
 def tune_beta(x, y, w, b, betas):
@@ -119,26 +120,35 @@ if __name__ == '__main__':
 	
 	# Positional arguments
 	parser.add_argument('data', help='path for the input data')
-	parser.add_argument('x_name', help='name of the column holding the text')
-	parser.add_argument('y_name', help='name of the column holding the target values')
+	parser.add_argument('x_name', help='column name for the tet')
+	parser.add_argument('y_name', help='column name for the targets')
 
 	# Optional arguments for tuning
-	parser.add_argument('-lm', '--limit_features', type=bool, default=True, help='limit the number of features for the SVM? (yes or no)')
-	parser.add_argument('-ft', '--features', type=int, default=35000, help='number of features for the SVM, if limited')
-	parser.add_argument('-ng', '--ngrams', type=int, default=2, help='max ngram size')
-	parser.add_argument('-sm', '--split_method', default='train-test', help='split the data by var(iable), train-test, or cross-val')
-	parser.add_argument('-sv', '--split_variable', help='which variable to use for splitting')
-	parser.add_argument('-tv', '--test_value', help='which value of --split_variable to use for testing')
-	parser.add_argument('-vb', '--verbose', default=True, help='should functions print updates as they go?')
+	parser.add_argument('-lm', '--limit_features',type=bool, default=True, 
+                     help='limit the number of features? (yes or no)')
+	parser.add_argument('-ft', '--features', type=int, default=35000, 
+                     help='number of features for the SVM, if limited')
+	parser.add_argument('-ng', '--ngrams', type=int, default=2, 
+                     help='max ngram size')
+	parser.add_argument('-sm', '--split_method', default='train-test', 
+                     help='split the data by var, train-test, or cross-val')
+	parser.add_argument('-sv', '--split_variable', 
+                     help='which variable to use for splitting')
+	parser.add_argument('-tv', '--test_value', 
+                     help='which value of --split_variable to use for testing')
+	parser.add_argument('-vb', '--verbose', default=True, 
+                     help='should functions print updates as they go?')
 	args = parser.parse_args()
 
 	# Loading and processing the data
 	df = pd.read_csv(args.data)
 	d = TextData()
 	if args.limit_features:
-		d.process(df, args.x_name, args.y_name, max_features=args.features, verbose=args.verbose)
+		d.process(df, args.x_name, args.y_name, 
+            max_features=args.features, verbose=args.verbose)
 	else:
-		d.process(df, args.x_name, args.y_name, max_features=None, verbose=args.verbose)
+		d.process(df, args.x_name, args.y_name, 
+            max_features=None, verbose=args.verbose)
 	
 	# Getting the training and test sets	
 	d.split(args.split_method, args.split_variable, args.test_value)
