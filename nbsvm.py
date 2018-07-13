@@ -22,16 +22,6 @@ def interpolate(w, beta):
 	return ((1 - beta) * (np.true_divide(np.linalg.norm(w, ord=1), 
                                       w.shape[1]))) + (beta * w)
 
-# Finds the interpolation paramater beta that yields the highest accuracy
-def tune_beta(x, y, w, b, betas):
-    n = len(betas)
-    results = np.zeros([n, 2])
-    results[:,0] = betas
-    for i in range(0, n):
-        int_weights = interpolate(w, betas[i])
-        results[i, 1] = accuracy(x, y, int_weights, b)
-    return results
-
 # Main class for the NB-SVM
 class NBSVM:
 	def __init__(self, C=0.1, beta=0.25):
